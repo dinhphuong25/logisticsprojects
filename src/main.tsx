@@ -7,12 +7,10 @@ import i18n from './lib/i18n'
 import App from './App'
 import './index.css'
 
-// Initialize MirageJS in development
-if (import.meta.env.DEV) {
-  import('./mocks/server').then(({ makeServer }) => {
-    makeServer()
-  })
-}
+// Initialize MirageJS mock server (works in both dev and production)
+import('./mocks/server').then(({ makeServer }) => {
+  makeServer()
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
