@@ -1,0 +1,353 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============= ENUMS =============
+
+enum InboundStatus {
+  PENDING
+  SCHEDULED
+  RECEIVING
+  QC_HOLD
+  VARIANCE
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskType {
+  RECEIVE
+  PUTAWAY
+}
+
+enum TaskStatus {
+  QUEUED
+  STARTED
+  DONE
+}
+
+enum QcCheckType {
+  TEMP
+  VISUAL
+  WEIGHT
+}
+
+enum QcResultType {
+  PASS
+  FAIL
+}
+
+enum LedgerReason {
+  RECEIVE
+  VARIANCE
+  QC_HOLD
+  RELEASE
+  PUTAWAY
+  ADJUSTMENT
+}
+
+enum DockStatus {
+  AVAILABLE
+  BOOKED
+  ARRIVED
+  NO_SHOW
+}
+
+enum UserRole {
+  ADMIN
+  PLANNER
+  RECEIVER
+  QC
+  SUPERVISOR
+  QC_MANAGER
+}
+
+// ============= CORE MODELS =============
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      UserRole @default(RECEIVER)
+  password  String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdInbounds   Inbound[]        @relation("InboundCreator")
+  qcResults         QcResult[]
+  assignedTasks     Task[]
+  inventoryLedgers  InventoryLedger[]
+
+  @@map("users")
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  contact     String?
+  email       String?
+  phone       String?
+  address     String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  inbounds    Inbound[]
+
+  @@map("suppliers")
+}
+
+model Sku {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  description     String?
+  uom             String   @default("EA") // EA, CS, KG, etc
+  tempGroup       String   // FROZEN, CHILLED, COOL
+  tempMin         Float
+  tempMax         Float
+  requireLot      Boolean  @default(true)
+  requireExpiry   Boolean  @default(true)
+  minShelfDays    Int      @default(60)
+  overReceiptMax  Float    @default(0.02) // 2% tolerance
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  inboundLines    InboundLine[]
+  inventoryLedgers InventoryLedger[]
+
+  @@map("skus")
+}
+
+model Location {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  zone            String   // RECEIVING, STORAGE, SHIPPING
+  tempGroup       String   // FROZEN, CHILLED, COOL, AMBIENT
+  capacityPallet  Int      @default(0)
+  currentPallet   Int      @default(0)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  inventoryLedgers InventoryLedger[]
+  tasksFrom       Task[]           @relation("TaskLocationFrom")
+  tasksTo         Task[]           @relation("TaskLocationTo")
+
+  @@map("locations")
+}
+
+model Dock {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  capacityPallet  Int      @default(10)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  inbounds        Inbound[]
+  timeslots       DockTimeslot[]
+
+  @@map("docks")
+}
+
+// ============= INBOUND MODELS =============
+
+model Inbound {
+  id          String         @id @default(cuid())
+  code        String         @unique
+  supplierId  String
+  eta         DateTime
+  status      InboundStatus  @default(PENDING)
+  dockId      String?
+  timeslot    DateTime?
+  notes       String?
+  createdBy   String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  scheduledAt DateTime?
+  arrivedAt   DateTime?
+  completedAt DateTime?
+
+  // Relations
+  supplier        Supplier          @relation(fields: [supplierId], references: [id])
+  dock            Dock?             @relation(fields: [dockId], references: [id])
+  creator         User              @relation("InboundCreator", fields: [createdBy], references: [id])
+  lines           InboundLine[]
+  handlingUnits   HandlingUnit[]
+  tasks           Task[]
+
+  @@index([status])
+  @@index([eta])
+  @@index([supplierId])
+  @@map("inbounds")
+}
+
+model InboundLine {
+  id            String   @id @default(cuid())
+  inboundId     String
+  skuId         String
+  skuName       String
+  uom           String
+  qtyExpected   Int
+  qtyReceived   Int      @default(0)
+  lot           String?
+  mfgDate       DateTime?
+  expDate       DateTime?
+  tempMin       Float
+  tempMax       Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  inbound       Inbound     @relation(fields: [inboundId], references: [id], onDelete: Cascade)
+  sku           Sku         @relation(fields: [skuId], references: [id])
+  qcResults     QcResult[]
+
+  @@index([inboundId])
+  @@map("inbound_lines")
+}
+
+model HandlingUnit {
+  id            String   @id @default(cuid())
+  inboundId     String
+  sscc          String   @unique // Serial Shipping Container Code
+  grossWeight   Float?
+  netWeight     Float?
+  dimensions    Json?    // {length, width, height, uom}
+  tempLogPath   String?  // Path to temperature log file
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  inbound       Inbound  @relation(fields: [inboundId], references: [id], onDelete: Cascade)
+
+  @@index([inboundId])
+  @@map("handling_units")
+}
+
+// ============= QC MODELS =============
+
+model QcResult {
+  id              String        @id @default(cuid())
+  inboundLineId   String
+  checkType       QcCheckType
+  result          QcResultType
+  measuredValue   Float?
+  unit            String?
+  photos          Json?       // Array of photo URLs
+  remarks         String?
+  createdBy       String
+  createdAt       DateTime    @default(now())
+
+  // Relations
+  inboundLine     InboundLine @relation(fields: [inboundLineId], references: [id], onDelete: Cascade)
+  creator         User        @relation(fields: [createdBy], references: [id])
+
+  @@index([inboundLineId])
+  @@map("qc_results")
+}
+
+// ============= TASK MODELS =============
+
+model Task {
+  id            String      @id @default(cuid())
+  refType       String      @default("inbound") // inbound, outbound, etc
+  refId         String
+  type          TaskType
+  status        TaskStatus  @default(QUEUED)
+  assignedTo    String?
+  locationFrom  String?
+  locationTo    String?
+  priority      Int         @default(5) // 1-10, higher = more urgent
+  notes         String?
+  startAt       DateTime?
+  endAt         DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  assignedUser  User?       @relation(fields: [assignedTo], references: [id])
+  inbound       Inbound?    @relation(fields: [refId], references: [id], onDelete: Cascade)
+  fromLocation  Location?   @relation("TaskLocationFrom", fields: [locationFrom], references: [id])
+  toLocation    Location?   @relation("TaskLocationTo", fields: [locationTo], references: [id])
+
+  @@index([status])
+  @@index([refId])
+  @@index([assignedTo])
+  @@map("tasks")
+}
+
+// ============= INVENTORY MODELS =============
+
+model InventoryLedger {
+  id          String        @id @default(cuid())
+  skuId       String
+  lot         String?
+  locationId  String?
+  qtyChange   Int           // Positive for increase, negative for decrease
+  reason      LedgerReason
+  docCode     String        // Reference document code (Inbound code, etc)
+  remarks     String?
+  createdBy   String
+  createdAt   DateTime      @default(now())
+
+  // Relations
+  sku         Sku           @relation(fields: [skuId], references: [id])
+  location    Location?     @relation(fields: [locationId], references: [id])
+  creator     User          @relation(fields: [createdBy], references: [id])
+
+  @@index([skuId])
+  @@index([locationId])
+  @@index([lot])
+  @@index([createdAt])
+  @@map("inventory_ledgers")
+}
+
+// ============= DOCK MANAGEMENT =============
+
+model DockTimeslot {
+  id              String      @id @default(cuid())
+  dockId          String
+  timeslot        DateTime
+  capacityPallet  Int
+  bookedPallet    Int         @default(0)
+  status          DockStatus  @default(AVAILABLE)
+  inboundCode     String?     // Reference to booked inbound
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  dock            Dock        @relation(fields: [dockId], references: [id], onDelete: Cascade)
+
+  @@unique([dockId, timeslot])
+  @@index([timeslot])
+  @@map("dock_timeslots")
+}
+
+// ============= CONFIGURATION =============
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
