@@ -36,7 +36,7 @@ export default defineConfig({
             './src/features/outbound/OutboundOrdersPage.tsx',
           ],
           'monitoring': [
-            './src/features/temperature/TemperatureMonitoringPage.tsx',
+            './src/features/temperature/TemperaturePage.tsx',
             './src/features/alerts/AlertsPage.tsx',
           ],
           'warehouse': [
