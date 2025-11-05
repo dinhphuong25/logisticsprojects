@@ -17,8 +17,6 @@ import {
   Settings,
   ToggleLeft,
   ToggleRight,
-  AlertTriangle,
-  CheckCircle2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -40,7 +38,7 @@ export default function RemoteControlPage() {
   const queryClient = useQueryClient()
   const [selectedZone, setSelectedZone] = useState<string>('all')
   const [autoMode, setAutoMode] = useState(false)
-  const autoModeIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const autoModeIntervalRef = useRef<number | null>(null)
   const lastControlTime = useRef<Map<string, number>>(new Map())
 
   const { data: devices = [] } = useQuery<Device[]>({
@@ -67,6 +65,19 @@ export default function RemoteControlPage() {
     lastControlTime.current.set(deviceId, now)
     return true
   }, [])
+
+  const controlDeviceMutation = useMutation({
+    mutationFn: async ({ id, action, value }: { id: string; action: string; value?: string | number }) => {
+      await apiClient.post(`/devices/${id}/control`, { action, value })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['devices'] })
+      toast.success('Đã điều khiển thiết bị')
+    },
+    onError: () => {
+      toast.error('Không thể điều khiển thiết bị')
+    },
+  })
 
   // Enhanced Smart Logic: Improved auto control with better conditions
   const applySmartLogic = useCallback(() => {
@@ -183,20 +194,8 @@ export default function RemoteControlPage() {
     } else {
       toast.success(`🤖 Đã thực hiện ${actionCount} hành động điều khiển thông minh`)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devices, canControlDevice])
-
-  const controlDeviceMutation = useMutation({
-    mutationFn: async ({ id, action, value }: { id: string; action: string; value?: any }) => {
-      await apiClient.post(`/devices/${id}/control`, { action, value })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['devices'] })
-      toast.success('Đã điều khiển thiết bị')
-    },
-    onError: () => {
-      toast.error('Không thể điều khiển thiết bị')
-    },
-  })
 
   // Auto mode effect - run smart logic periodically
   useEffect(() => {
@@ -237,6 +236,7 @@ export default function RemoteControlPage() {
 
     const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON'
     controlDeviceMutation.mutate({ id: deviceId, action: 'toggle', value: newStatus })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devices, canControlDevice])
 
   const handleSpeedChange = useCallback((deviceId: string, speed: number) => {
@@ -249,6 +249,7 @@ export default function RemoteControlPage() {
     }
 
     controlDeviceMutation.mutate({ id: deviceId, action: 'setSpeed', value: speed })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canControlDevice])
 
   const filteredDevices =
@@ -376,7 +377,8 @@ export default function RemoteControlPage() {
         { duration: 5000 }
       )
     }
-  }, [devices, canControlDevice])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devices, canControlDevice, handleSpeedChange])
 
   // Enhanced Power Usage Alert with detailed analysis
   const checkPowerUsage = useCallback(() => {
