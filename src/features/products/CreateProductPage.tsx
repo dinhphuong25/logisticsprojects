@@ -514,7 +514,7 @@ export default function CreateProductPage() {
           {/* Right Column - Image & Stock */}
           <div className="space-y-6">
             {/* Image Upload */}
-            <Card className="border-0 shadow-lg sticky top-6">
+            <Card className="border-0 shadow-lg">
               <CardHeader className="border-b bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5 text-pink-600" />

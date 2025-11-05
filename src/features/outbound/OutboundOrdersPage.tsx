@@ -139,10 +139,16 @@ export default function OutboundOrdersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['outbound-orders'] })
-      toast.success('Đã bắt đầu lấy hàng')
+      toast.success('🚀 Đã bắt đầu xử lý đơn hàng', {
+        description: 'Đơn hàng đang được lấy hàng và chuẩn bị',
+        duration: 3000,
+      })
     },
     onError: () => {
-      toast.error('Không thể bắt đầu lấy hàng')
+      toast.error('❌ Không thể bắt đầu xử lý đơn hàng', {
+        description: 'Vui lòng thử lại sau',
+        duration: 3000,
+      })
     },
   })
 
@@ -161,10 +167,16 @@ export default function OutboundOrdersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['outbound-orders'] })
-      toast.success('Đã gửi đơn hàng thành công')
+      toast.success('✅ Đã gửi đơn hàng thành công', {
+        description: 'Đơn hàng đang trên đường vận chuyển',
+        duration: 3000,
+      })
     },
     onError: () => {
-      toast.error('Không thể gửi đơn hàng')
+      toast.error('❌ Không thể gửi đơn hàng', {
+        description: 'Vui lòng kiểm tra và thử lại',
+        duration: 3000,
+      })
     },
   })
 
@@ -560,28 +572,77 @@ export default function OutboundOrdersPage() {
                       <td className="p-4">{getStatusBadge(order.status)}</td>
                       <td className="p-4">
                         <div className="flex gap-2">
-                          {order.status === 'RELEASED' && (
-                            <Button
-                              size="sm"
-                              onClick={() => pickOrderMutation.mutate(order.id)}
-                              disabled={pickOrderMutation.isPending}
-                              className="bg-blue-600 hover:bg-blue-700"
-                            >
-                              <Package className="w-4 h-4 mr-1" />
-                              Lấy hàng
-                            </Button>
-                          )}
-                          {(order.status === 'PICKED' || order.status === 'LOADED') && (
-                            <Button
-                              size="sm"
-                              onClick={() => shipOrderMutation.mutate(order.id)}
-                              disabled={shipOrderMutation.isPending}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <Truck className="w-4 h-4 mr-1" />
-                              Gửi đi
-                            </Button>
-                          )}
+                          {/* Smart button logic based on status */}
+                          {(() => {
+                            const status = order.status?.toUpperCase()
+                            
+                            // Đơn chờ xử lý hoặc đã phát hành - Hiển thị nút Bắt đầu
+                            if (status === 'PENDING' || status === 'RELEASED' || status === 'CHỜ XỬ LÝ') {
+                              return (
+                                <Button
+                                  size="sm"
+                                  onClick={() => pickOrderMutation.mutate(order.id)}
+                                  disabled={pickOrderMutation.isPending}
+                                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                                >
+                                  <Package className="w-4 h-4 mr-1" />
+                                  Bắt đầu
+                                </Button>
+                              )
+                            }
+                            
+                            // Đang lấy hàng - Hiển thị trạng thái đang xử lý
+                            if (status === 'PICKING' || status === 'ĐANG LẤY HÀNG') {
+                              return (
+                                <Badge className="bg-blue-500 text-white px-4 py-1.5 text-xs font-semibold">
+                                  <Package className="w-3 h-3 mr-1 animate-pulse" />
+                                  Đang xử lý...
+                                </Badge>
+                              )
+                            }
+                            
+                            // Đã lấy hàng hoặc đã xếp hàng - Hiển thị nút Gửi đi
+                            if (status === 'PICKED' || status === 'LOADED' || status === 'PACKING') {
+                              return (
+                                <Button
+                                  size="sm"
+                                  onClick={() => shipOrderMutation.mutate(order.id)}
+                                  disabled={shipOrderMutation.isPending}
+                                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                                >
+                                  <Truck className="w-4 h-4 mr-1" />
+                                  Gửi đi
+                                </Button>
+                              )
+                            }
+                            
+                            // Đã gửi đi - Hiển thị badge hoàn thành
+                            if (status === 'SHIPPED' || status === 'ĐÃ GỬI ĐI') {
+                              return (
+                                <Badge className="bg-green-500 text-white px-4 py-1.5 text-xs font-semibold">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Hoàn thành
+                                </Badge>
+                              )
+                            }
+                            
+                            // Đã hủy - Hiển thị badge hủy
+                            if (status === 'CANCELLED' || status === 'ĐÃ HỦY') {
+                              return (
+                                <Badge className="bg-gray-500 text-white px-4 py-1.5 text-xs font-semibold">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Đã hủy
+                                </Badge>
+                              )
+                            }
+                            
+                            // Mặc định - Không hiển thị gì hoặc hiển thị trạng thái
+                            return (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                -
+                              </span>
+                            )
+                          })()}
                         </div>
                       </td>
                     </tr>

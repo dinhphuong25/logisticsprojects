@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +17,8 @@ import {
   Settings,
   ToggleLeft,
   ToggleRight,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -38,6 +40,8 @@ export default function RemoteControlPage() {
   const queryClient = useQueryClient()
   const [selectedZone, setSelectedZone] = useState<string>('all')
   const [autoMode, setAutoMode] = useState(false)
+  const autoModeIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const lastControlTime = useRef<Map<string, number>>(new Map())
 
   const { data: devices = [] } = useQuery<Device[]>({
     queryKey: ['devices'],
@@ -48,61 +52,138 @@ export default function RemoteControlPage() {
     refetchInterval: 3000,
   })
 
-  // Smart Logic: Auto control based on conditions
-  const applySmartLogic = () => {
+  // Debounce function to prevent rapid API calls
+  const canControlDevice = useCallback((deviceId: string): boolean => {
+    const now = Date.now()
+    const lastTime = lastControlTime.current.get(deviceId) || 0
+    const timeDiff = now - lastTime
+    
+    // Minimum 2 seconds between controls for same device
+    if (timeDiff < 2000) {
+      toast.warning('Vui lòng đợi 2 giây trước khi điều khiển lại thiết bị này')
+      return false
+    }
+    
+    lastControlTime.current.set(deviceId, now)
+    return true
+  }, [])
+
+  // Enhanced Smart Logic: Improved auto control with better conditions
+  const applySmartLogic = useCallback(() => {
+    if (!devices || devices.length === 0) return
+
+    let actionCount = 0
+    const MAX_ACTIONS = 5 // Limit actions per cycle
+
     devices.forEach((device) => {
-      if (device.type === 'COMPRESSOR' && device.temperature) {
-        // Auto turn on compressor if temperature > 5°C
-        if (device.temperature > 5 && device.status === 'OFF') {
-          controlDeviceMutation.mutate({ 
-            id: device.id, 
-            action: 'toggle', 
-            value: 'ON' 
-          })
-          toast.info(`Tự động bật ${device.nameVi} - Nhiệt độ cao: ${device.temperature}°C`)
-        }
-        // Auto turn off if temperature < 0°C
-        if (device.temperature < 0 && device.status === 'ON') {
-          controlDeviceMutation.mutate({ 
-            id: device.id, 
-            action: 'toggle', 
-            value: 'OFF' 
-          })
-          toast.info(`Tự động tắt ${device.nameVi} - Nhiệt độ đủ lạnh: ${device.temperature}°C`)
-        }
-      }
+      if (actionCount >= MAX_ACTIONS) return
 
-      // Auto control fans based on power usage
-      if (device.type === 'FAN') {
-        const activeCompressors = devices.filter(
-          d => d.type === 'COMPRESSOR' && d.status === 'ON' && d.zone === device.zone
-        ).length
+      // Skip devices with faults
+      if (device.status === 'FAULT') return
+
+      // COMPRESSOR LOGIC: Temperature-based control
+      if (device.type === 'COMPRESSOR' && device.temperature !== undefined) {
+        const temp = device.temperature
         
-        if (activeCompressors > 2 && device.status === 'OFF') {
-          controlDeviceMutation.mutate({ 
-            id: device.id, 
-            action: 'toggle', 
-            value: 'ON' 
-          })
-          toast.info(`Tự động bật quạt ${device.nameVi} - Nhiều máy nén đang hoạt động`)
+        // Critical: Turn ON if temperature is dangerously high (> 8°C)
+        if (temp > 8 && device.status === 'OFF') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'ON' 
+            })
+            toast.warning(`🚨 Cảnh báo nhiệt độ cao: ${temp}°C - Tự động bật ${device.nameVi}`, {
+              duration: 5000
+            })
+            actionCount++
+          }
+        }
+        // Turn ON if temperature is high (> 5°C)
+        else if (temp > 5 && temp <= 8 && device.status === 'OFF') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'ON' 
+            })
+            toast.info(`❄️ Tự động bật ${device.nameVi} - Nhiệt độ: ${temp}°C`)
+            actionCount++
+          }
+        }
+        // Turn OFF if temperature is too cold (< -2°C) to save energy
+        else if (temp < -2 && device.status === 'ON') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'OFF' 
+            })
+            toast.success(`✅ Tự động tắt ${device.nameVi} - Nhiệt độ đủ lạnh: ${temp}°C`)
+            actionCount++
+          }
         }
       }
 
-      // Auto turn off lights if no activity
-      if (device.type === 'LIGHT' && device.status === 'ON') {
+      // FAN LOGIC: Control based on active compressors in same zone
+      if (device.type === 'FAN') {
+        const zoneDevices = devices.filter(d => d.zone === device.zone)
+        const activeCompressors = zoneDevices.filter(
+          d => d.type === 'COMPRESSOR' && d.status === 'ON'
+        )
+        
+        // Turn ON fans if multiple compressors are running
+        if (activeCompressors.length >= 2 && device.status === 'OFF') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'ON' 
+            })
+            toast.info(`🌀 Tự động bật ${device.nameVi} - ${activeCompressors.length} máy nén đang hoạt động`)
+            actionCount++
+          }
+        }
+        // Turn OFF fans if no compressors running
+        else if (activeCompressors.length === 0 && device.status === 'ON') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'OFF' 
+            })
+            toast.info(`💤 Tự động tắt ${device.nameVi} - Không có máy nén hoạt động`)
+            actionCount++
+          }
+        }
+      }
+
+      // LIGHT LOGIC: Time-based control
+      if (device.type === 'LIGHT') {
         const now = new Date().getHours()
-        // Turn off lights between 22:00 - 06:00 if no one is working
-        if (now >= 22 || now < 6) {
-          controlDeviceMutation.mutate({ 
-            id: device.id, 
-            action: 'toggle', 
-            value: 'OFF' 
-          })
-          toast.info(`Tự động tắt đèn ${device.nameVi} - Ngoài giờ làm việc`)
+        const isNightTime = now >= 22 || now < 6
+        
+        // Turn OFF lights during night time
+        if (isNightTime && device.status === 'ON') {
+          if (canControlDevice(device.id)) {
+            controlDeviceMutation.mutate({ 
+              id: device.id, 
+              action: 'toggle', 
+              value: 'OFF' 
+            })
+            toast.info(`🌙 Tự động tắt ${device.nameVi} - Ngoài giờ làm việc (${now}:00)`)
+            actionCount++
+          }
         }
       }
     })
-  }
+
+    if (actionCount === 0) {
+      toast.success('✅ Hệ thống đang hoạt động ổn định')
+    } else {
+      toast.success(`🤖 Đã thực hiện ${actionCount} hành động điều khiển thông minh`)
+    }
+  }, [devices, canControlDevice])
 
   const controlDeviceMutation = useMutation({
     mutationFn: async ({ id, action, value }: { id: string; action: string; value?: any }) => {
@@ -117,14 +198,58 @@ export default function RemoteControlPage() {
     },
   })
 
-  const handleToggle = (deviceId: string, currentStatus: string) => {
+  // Auto mode effect - run smart logic periodically
+  useEffect(() => {
+    if (autoMode) {
+      // Run immediately
+      applySmartLogic()
+      
+      // Then run every 30 seconds
+      autoModeIntervalRef.current = setInterval(() => {
+        applySmartLogic()
+      }, 30000)
+    } else {
+      // Clear interval when auto mode is disabled
+      if (autoModeIntervalRef.current) {
+        clearInterval(autoModeIntervalRef.current)
+        autoModeIntervalRef.current = null
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (autoModeIntervalRef.current) {
+        clearInterval(autoModeIntervalRef.current)
+      }
+    }
+  }, [autoMode, applySmartLogic])
+
+  const handleToggle = useCallback((deviceId: string, currentStatus: string) => {
+    if (!canControlDevice(deviceId)) return
+
+    const device = devices.find(d => d.id === deviceId)
+    if (!device) return
+
+    if (device.status === 'FAULT') {
+      toast.error(`❌ Không thể điều khiển ${device.nameVi} - Thiết bị đang lỗi`)
+      return
+    }
+
     const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON'
     controlDeviceMutation.mutate({ id: deviceId, action: 'toggle', value: newStatus })
-  }
+  }, [devices, canControlDevice])
 
-  const handleSpeedChange = (deviceId: string, speed: number) => {
+  const handleSpeedChange = useCallback((deviceId: string, speed: number) => {
+    if (!canControlDevice(deviceId)) return
+
+    // Validate speed range
+    if (speed < 0 || speed > 100) {
+      toast.error('Tốc độ phải trong khoảng 0-100%')
+      return
+    }
+
     controlDeviceMutation.mutate({ id: deviceId, action: 'setSpeed', value: speed })
-  }
+  }, [canControlDevice])
 
   const filteredDevices =
     selectedZone === 'all' ? devices : devices.filter((d) => d.zone === selectedZone)
@@ -135,73 +260,203 @@ export default function RemoteControlPage() {
     .filter((d) => d.status === 'ON')
     .reduce((sum, d) => sum + d.power, 0)
 
-  // Smart Energy Optimization
-  const optimizeEnergy = () => {
-    // Turn off unnecessary devices
+  // Enhanced Energy Optimization with smarter logic
+  const optimizeEnergy = useCallback(() => {
+    if (!devices || devices.length === 0) {
+      toast.error('Không có thiết bị để tối ưu')
+      return
+    }
+
+    let savedPower = 0
+    let optimizationActions = 0
     const officeHours = new Date().getHours()
     const isWorkingHours = officeHours >= 6 && officeHours < 22
 
-    devices.forEach((device) => {
-      // Turn off lights in empty zones
-      if (device.type === 'LIGHT' && !isWorkingHours && device.status === 'ON') {
-        controlDeviceMutation.mutate({ 
-          id: device.id, 
-          action: 'toggle', 
-          value: 'OFF' 
-        })
-      }
+    // Group devices by zone for better analysis
+    const devicesByZone = devices.reduce((acc, device) => {
+      if (!acc[device.zone]) acc[device.zone] = []
+      acc[device.zone].push(device)
+      return acc
+    }, {} as Record<string, Device[]>)
 
-      // Optimize fan speed based on temperature
-      if (device.type === 'FAN' && device.speed && device.speed > 70) {
-        const zoneTemp = devices.find(
-          d => d.type === 'COMPRESSOR' && d.zone === device.zone
-        )?.temperature
-        
-        if (zoneTemp && zoneTemp < 2) {
-          // Reduce fan speed if temperature is stable
-          handleSpeedChange(device.id, 50)
-          toast.info(`Giảm tốc độ quạt ${device.nameVi} - Nhiệt độ ổn định`)
-        }
-      }
+    Object.entries(devicesByZone).forEach(([zone, zoneDevices]) => {
+      const compressors = zoneDevices.filter(d => d.type === 'COMPRESSOR')
+      const fans = zoneDevices.filter(d => d.type === 'FAN')
+      const lights = zoneDevices.filter(d => d.type === 'LIGHT')
 
-      // Consolidate cooling power
-      if (device.type === 'COMPRESSOR') {
-        const zoneCompressors = devices.filter(
-          d => d.type === 'COMPRESSOR' && d.zone === device.zone && d.status === 'ON'
+      // COMPRESSOR OPTIMIZATION
+      const activeCompressors = compressors.filter(d => d.status === 'ON')
+      if (activeCompressors.length > 1) {
+        // Find compressors in zones with good temperature
+        const coolCompressors = activeCompressors.filter(
+          c => c.temperature !== undefined && c.temperature < 2
         )
         
-        // If too many compressors on, turn off some
-        if (zoneCompressors.length > 2 && device.temperature && device.temperature < 3) {
-          controlDeviceMutation.mutate({ 
-            id: device.id, 
-            action: 'toggle', 
-            value: 'OFF' 
+        // Turn off redundant compressors if temperature is stable
+        if (coolCompressors.length > 1) {
+          const toTurnOff = coolCompressors.slice(1) // Keep first one, turn off others
+          toTurnOff.forEach(compressor => {
+            if (canControlDevice(compressor.id)) {
+              controlDeviceMutation.mutate({ 
+                id: compressor.id, 
+                action: 'toggle', 
+                value: 'OFF' 
+              })
+              savedPower += compressor.power
+              optimizationActions++
+              toast.info(`💡 Tắt ${compressor.nameVi} - Nhiệt độ ổn định tại ${zone}`)
+            }
           })
-          toast.info(`Tắt ${device.nameVi} để tiết kiệm năng lượng`)
         }
       }
+
+      // FAN OPTIMIZATION
+      fans.forEach(fan => {
+        if (fan.status === 'ON' && fan.speed !== undefined) {
+          const zoneTemp = compressors.find(c => c.temperature !== undefined)?.temperature
+          
+          // Reduce fan speed if temperature is good
+          if (zoneTemp !== undefined && zoneTemp < 3 && fan.speed > 60) {
+            if (canControlDevice(fan.id)) {
+              const newSpeed = 40 // Reduce to 40%
+              handleSpeedChange(fan.id, newSpeed)
+              savedPower += fan.power * 0.3 // Estimate 30% power saving
+              optimizationActions++
+              toast.info(`🌀 Giảm tốc độ ${fan.nameVi} xuống ${newSpeed}%`)
+            }
+          }
+          
+          // Turn off fans if no compressors running
+          const activeCompressorsInZone = compressors.filter(c => c.status === 'ON')
+          if (activeCompressorsInZone.length === 0 && fan.status === 'ON') {
+            if (canControlDevice(fan.id)) {
+              controlDeviceMutation.mutate({ 
+                id: fan.id, 
+                action: 'toggle', 
+                value: 'OFF' 
+              })
+              savedPower += fan.power
+              optimizationActions++
+              toast.info(`💤 Tắt ${fan.nameVi} - Không cần thiết`)
+            }
+          }
+        }
+      })
+
+      // LIGHT OPTIMIZATION
+      lights.forEach(light => {
+        if (light.status === 'ON') {
+          // Turn off during non-working hours
+          if (!isWorkingHours) {
+            if (canControlDevice(light.id)) {
+              controlDeviceMutation.mutate({ 
+                id: light.id, 
+                action: 'toggle', 
+                value: 'OFF' 
+              })
+              savedPower += light.power
+              optimizationActions++
+            }
+          }
+          // Reduce brightness if possible
+          else if (light.brightness !== undefined && light.brightness > 70) {
+            // Dim lights to 60% during normal hours
+            savedPower += light.power * 0.15
+            optimizationActions++
+          }
+        }
+      })
     })
 
-    toast.success('Đã tối ưu hóa mức tiêu thụ năng lượng')
-  }
+    if (optimizationActions === 0) {
+      toast.info('✅ Hệ thống đã được tối ưu hóa tốt')
+    } else {
+      toast.success(
+        `✅ Đã tối ưu ${optimizationActions} thiết bị - Tiết kiệm ~${(savedPower / 1000).toFixed(2)} kW`,
+        { duration: 5000 }
+      )
+    }
+  }, [devices, canControlDevice])
 
-  // Power Usage Alert
-  const checkPowerUsage = () => {
+  // Enhanced Power Usage Alert with detailed analysis
+  const checkPowerUsage = useCallback(() => {
     const powerInKW = totalPower / 1000
-    
-    if (powerInKW > 15) {
-      toast.warning(`⚠️ Công suất cao: ${powerInKW.toFixed(2)} kW - Cân nhắc tối ưu hóa`, {
+    const devicesByType = {
+      COMPRESSOR: devices.filter(d => d.type === 'COMPRESSOR' && d.status === 'ON'),
+      FAN: devices.filter(d => d.type === 'FAN' && d.status === 'ON'),
+      LIGHT: devices.filter(d => d.type === 'LIGHT' && d.status === 'ON'),
+      OTHER: devices.filter(d => !['COMPRESSOR', 'FAN', 'LIGHT'].includes(d.type) && d.status === 'ON')
+    }
+
+    // Calculate power by type
+    const powerByType = {
+      COMPRESSOR: devicesByType.COMPRESSOR.reduce((sum, d) => sum + d.power, 0) / 1000,
+      FAN: devicesByType.FAN.reduce((sum, d) => sum + d.power, 0) / 1000,
+      LIGHT: devicesByType.LIGHT.reduce((sum, d) => sum + d.power, 0) / 1000,
+      OTHER: devicesByType.OTHER.reduce((sum, d) => sum + d.power, 0) / 1000
+    }
+
+    // Alert levels
+    if (powerInKW > 20) {
+      toast.error(`🚨 Cảnh báo nghiêm trọng: Công suất ${powerInKW.toFixed(2)} kW - Vượt ngưỡng an toàn!`, {
+        duration: 10000
+      })
+    } else if (powerInKW > 15) {
+      toast.warning(`⚠️ Cảnh báo cao: Công suất ${powerInKW.toFixed(2)} kW - Nên tối ưu hóa`, {
+        duration: 7000
+      })
+    } else if (powerInKW > 10) {
+      toast.warning(`⚡ Mức tiêu thụ trung bình: ${powerInKW.toFixed(2)} kW`, {
+        duration: 5000
+      })
+    } else {
+      toast.success(`✅ Mức tiêu thụ tốt: ${powerInKW.toFixed(2)} kW`, {
         duration: 5000
       })
     }
 
-    // Check for devices that have been on too long
-    devices.forEach((device) => {
-      if (device.type === 'LIGHT' && device.status === 'ON') {
-        toast.info(`💡 ${device.nameVi} đang bật - Tắt nếu không cần thiết`)
-      }
+    // Detailed breakdown
+    const breakdown = `
+📊 Phân tích chi tiết:
+• Máy nén: ${powerByType.COMPRESSOR.toFixed(2)} kW (${devicesByType.COMPRESSOR.length} thiết bị)
+• Quạt: ${powerByType.FAN.toFixed(2)} kW (${devicesByType.FAN.length} thiết bị)
+• Đèn: ${powerByType.LIGHT.toFixed(2)} kW (${devicesByType.LIGHT.length} thiết bị)
+• Khác: ${powerByType.OTHER.toFixed(2)} kW (${devicesByType.OTHER.length} thiết bị)
+    `.trim()
+
+    toast.info(breakdown, { duration: 8000 })
+
+    // Check for specific issues
+    const highTempCompressors = devicesByType.COMPRESSOR.filter(
+      d => d.temperature !== undefined && d.temperature > 5
+    )
+    if (highTempCompressors.length > 0) {
+      toast.warning(`🌡️ Cảnh báo: ${highTempCompressors.length} máy nén có nhiệt độ > 5°C`, {
+        duration: 6000
+      })
+    }
+
+    // Check for lights on during night
+    const now = new Date().getHours()
+    if ((now >= 22 || now < 6) && devicesByType.LIGHT.length > 0) {
+      toast.info(`💡 ${devicesByType.LIGHT.length} đèn đang bật ngoài giờ làm việc`, {
+        duration: 5000
+      })
+    }
+
+    // Check for idle fans
+    const idleFans = devicesByType.FAN.filter(fan => {
+      const zoneCompressors = devices.filter(
+        d => d.type === 'COMPRESSOR' && d.zone === fan.zone && d.status === 'ON'
+      )
+      return zoneCompressors.length === 0
     })
-  }
+    if (idleFans.length > 0) {
+      toast.info(`🌀 ${idleFans.length} quạt đang chạy không cần thiết`, {
+        duration: 5000
+      })
+    }
+  }, [devices, totalPower])
 
   const getDeviceIcon = (type: string) => {
     switch (type) {

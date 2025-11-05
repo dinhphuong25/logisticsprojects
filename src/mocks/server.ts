@@ -112,10 +112,53 @@ export function makeServer() {
         used: 17000,
       })
 
-      // Create Locations
+      // Create Locations with varied data
+      const statusOptions = ['EMPTY', 'OCCUPIED', 'FULL', 'RESERVED', 'BLOCKED']
+      const statusWeights = [0.15, 0.45, 0.25, 0.10, 0.05] // 15% empty, 45% occupied, 25% full, 10% reserved, 5% blocked
+      
+      const getRandomStatus = () => {
+        const rand = Math.random()
+        let cumulative = 0
+        for (let i = 0; i < statusWeights.length; i++) {
+          cumulative += statusWeights[i]
+          if (rand < cumulative) return statusOptions[i]
+        }
+        return 'OCCUPIED'
+      }
+
       for (let i = 1; i <= 20; i++) {
         const level = Math.ceil(i / 5)
         const slot = String((i % 5) || 5).padStart(2, '0')
+        
+        // Varied max capacity (800-1200)
+        const maxQty = 800 + Math.floor(Math.random() * 400)
+        
+        // Get random status
+        const status = getRandomStatus()
+        
+        // Calculate currentQty based on status
+        let currentQty
+        switch (status) {
+          case 'EMPTY':
+            currentQty = 0
+            break
+          case 'FULL':
+            currentQty = maxQty
+            break
+          case 'RESERVED':
+            currentQty = Math.floor(maxQty * (0.2 + Math.random() * 0.3)) // 20-50% full
+            break
+          case 'BLOCKED':
+            currentQty = 0
+            break
+          case 'OCCUPIED':
+          default:
+            // Occupied: 10-95% full with varied distribution
+            const occupancyRate = 0.1 + Math.random() * 0.85
+            currentQty = Math.floor(maxQty * occupancyRate)
+            break
+        }
+        
         server.create('location', {
           id: `loc-${i}`,
           zoneId: i <= 10 ? chillZone.id : frozenZone.id,
@@ -123,10 +166,10 @@ export function makeServer() {
           rack: 'A',
           level: String(level).padStart(2, '0'),
           slot,
-          maxQty: 1000,
-          currentQty: Math.floor(Math.random() * 800),
-          cubic: 10,
-          status: 'OCCUPIED',
+          maxQty,
+          currentQty,
+          cubic: 8 + Math.random() * 4, // 8-12 cubic meters
+          status,
         })
       }
 
@@ -801,6 +844,72 @@ export function makeServer() {
 
       this.delete('/products/:id', (schema: any, request) => {
         schema.db.products.remove(request.params.id)
+        return { success: true }
+      })
+
+      // Lots (for inventory management)
+      this.get('/lots', (schema: any) => {
+        return schema.db.lots
+      })
+
+      this.post('/lots', (schema: any, request) => {
+        const attrs = JSON.parse(request.requestBody)
+        const newLot = {
+          id: `lot-${Date.now()}`,
+          ...attrs,
+        }
+        const lot = schema.db.lots.insert(newLot)
+        return lot
+      })
+
+      this.put('/lots/:id', (schema: any, request) => {
+        const attrs = JSON.parse(request.requestBody)
+        const lot = schema.db.lots.update(request.params.id, attrs)
+        return lot
+      })
+
+      // Inventory Management
+      this.post('/inventory', (schema: any, request) => {
+        const attrs = JSON.parse(request.requestBody)
+        const newInventory = {
+          id: `inv-${Date.now()}`,
+          ...attrs,
+        }
+        const inventory = schema.db.inventories.insert(newInventory)
+        
+        // Update location currentQty
+        const location = schema.db.locations.find(attrs.locationId)
+        if (location) {
+          const newQty = (location as { currentQty: number }).currentQty + attrs.qty
+          schema.db.locations.update(attrs.locationId, {
+            currentQty: newQty,
+            status: newQty >= (location as { maxQty: number }).maxQty ? 'FULL' : newQty > 0 ? 'OCCUPIED' : 'EMPTY',
+          })
+        }
+
+        return inventory
+      })
+
+      this.put('/inventory/:id', (schema: any, request) => {
+        const attrs = JSON.parse(request.requestBody)
+        const inventory = schema.db.inventories.update(request.params.id, attrs)
+        return inventory
+      })
+
+      this.delete('/inventory/:id', (schema: any, request) => {
+        const inventory = schema.db.inventories.find(request.params.id)
+        if (inventory) {
+          // Update location currentQty
+          const location = schema.db.locations.find((inventory as { locationId: string }).locationId)
+          if (location) {
+            const newQty = Math.max(0, (location as { currentQty: number }).currentQty - (inventory as { qty: number }).qty)
+            schema.db.locations.update((inventory as { locationId: string }).locationId, {
+              currentQty: newQty,
+              status: newQty >= (location as { maxQty: number }).maxQty ? 'FULL' : newQty > 0 ? 'OCCUPIED' : 'EMPTY',
+            })
+          }
+        }
+        schema.db.inventories.remove(request.params.id)
         return { success: true }
       })
 

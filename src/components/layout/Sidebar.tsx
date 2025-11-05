@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useUIStore } from '@/stores/uiStore'
 import {
   LayoutDashboard,
   Package,
@@ -125,8 +126,22 @@ const navItems = [
 ]
 
 export default function Sidebar() {
+  const { sidebarCollapsed, setSidebarCollapsed } = useUIStore()
+
+  // Auto close sidebar on mobile when clicking nav item
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024) { // lg breakpoint
+      setSidebarCollapsed(true)
+    }
+  }
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-gradient-to-b from-white/95 via-white/90 to-white/95 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-gray-900/95 backdrop-blur-2xl border-r border-white/20 dark:border-gray-700/30 z-40 shadow-2xl shadow-blue-500/10">
+    <aside 
+      className={cn(
+        "fixed left-0 top-0 h-screen bg-gradient-to-b from-white/95 via-white/90 to-white/95 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-gray-900/95 backdrop-blur-2xl border-r border-white/20 dark:border-gray-700/30 z-40 shadow-2xl shadow-blue-500/10 transition-all duration-300",
+        sidebarCollapsed ? "-translate-x-full lg:translate-x-0 lg:w-16" : "w-56 translate-x-0"
+      )}
+    >
       
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden rounded-r-3xl">
@@ -143,19 +158,21 @@ export default function Sidebar() {
               <Snowflake className="w-6 h-6 text-white animate-pulse" />
             </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-base font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
-              NHÓM 3
-            </h1>
-            <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 tracking-wide">
-              VENTURE - ĐMST & KN
-            </p>
-          </div>
+          {!sidebarCollapsed && (
+            <div className="flex-1">
+              <h1 className="text-base font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
+                NHÓM 3
+              </h1>
+              <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 tracking-wide">
+                VENTURE - ĐMST & KN
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)] scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+      <nav className="relative z-10 p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {navItems.map((item, index) => {
           const isEnergyMenu = item.category === 'energy'
           
@@ -163,6 +180,7 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 cn(
                   'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 hover:shadow-md',
@@ -205,28 +223,30 @@ export default function Sidebar() {
                   </div>
 
                   {/* Label */}
-                  <div className="relative z-10 flex-1">
-                    <span className={cn(
-                      "font-semibold text-xs transition-all duration-300",
-                      isActive 
-                        ? "text-white" 
-                        : isEnergyMenu
-                          ? `text-${item.gradient.split('-')[1]}-700 dark:text-${item.gradient.split('-')[1]}-300 font-bold`
-                          : "group-hover:text-gray-900 dark:group-hover:text-gray-100"
-                    )}>
-                      {item.label}
-                    </span>
-                    
-                    {/* Special Energy Subtitle */}
-                    {isEnergyMenu && !isActive && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
-                        {item.to === '/energy' ? 'Green Energy' : 'Smart Control'}
-                      </div>
-                    )}
-                  </div>
+                  {!sidebarCollapsed && (
+                    <div className="relative z-10 flex-1">
+                      <span className={cn(
+                        "font-semibold text-xs transition-all duration-300",
+                        isActive 
+                          ? "text-white" 
+                          : isEnergyMenu
+                            ? `text-${item.gradient.split('-')[1]}-700 dark:text-${item.gradient.split('-')[1]}-300 font-bold`
+                            : "group-hover:text-gray-900 dark:group-hover:text-gray-100"
+                      )}>
+                        {item.label}
+                      </span>
+                      
+                      {/* Special Energy Subtitle */}
+                      {isEnergyMenu && !isActive && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
+                          {item.to === '/energy' ? 'Green Energy' : 'Smart Control'}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Badge */}
-                  {item.badge && (
+                  {item.badge && !sidebarCollapsed && (
                     <div className={cn(
                       "relative z-10 px-1.5 py-0.5 rounded text-[10px] font-bold",
                       item.badge === 'NEW' 
@@ -238,12 +258,12 @@ export default function Sidebar() {
                   )}
 
                   {/* Active Pulse Dot */}
-                  {isActive && (
+                  {isActive && !sidebarCollapsed && (
                     <div className="relative z-10 w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
                   )}
 
                   {/* Energy Menu Special Effects */}
-                  {isEnergyMenu && !isActive && (
+                  {isEnergyMenu && !isActive && !sidebarCollapsed && (
                     <div className="absolute right-3 top-3">
                       <div className={cn(
                         "w-2 h-2 rounded-full animate-pulse",
@@ -258,21 +278,23 @@ export default function Sidebar() {
         })}
 
         {/* Bottom Decorative Element */}
-        <div className="mt-6 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-teal-500/10 border border-white/20 dark:border-gray-700/30">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-            <div className="flex-1">
-              <div className="text-[10px] font-bold text-gray-800 dark:text-gray-200">System Status</div>
-              <div className="text-[9px] text-gray-600 dark:text-gray-400">All operational</div>
-            </div>
-            <div className="flex gap-1">
-              <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>
-              <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+        {!sidebarCollapsed && (
+          <div className="mt-6 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-teal-500/10 border border-white/20 dark:border-gray-700/30">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                <Zap className="w-3 h-3 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[10px] font-bold text-gray-800 dark:text-gray-200">System Status</div>
+                <div className="text-[9px] text-gray-600 dark:text-gray-400">All operational</div>
+              </div>
+              <div className="flex gap-1">
+                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>
+                <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </nav>
     </aside>
   )

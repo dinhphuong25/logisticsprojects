@@ -20,6 +20,9 @@ import {
   List,
   Filter,
   X,
+  Snowflake,
+  FolderOpen,
+  AlertTriangle,
 } from 'lucide-react'
 
 interface Product {
@@ -81,96 +84,162 @@ export default function ProductManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-900 via-teal-800 to-cyan-800 dark:from-emerald-200 dark:via-teal-200 dark:to-cyan-200 bg-clip-text text-transparent">
-            Sản phẩm
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Quản lý danh mục sản phẩm và thông số kỹ thuật
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${
-                viewMode === 'grid'
-                  ? 'bg-white dark:bg-gray-700 shadow'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-              }`}
-            >
-              <Grid3x3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${
-                viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 shadow'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-              }`}
-            >
-              <List className="w-4 h-4" />
-            </button>
+      {/* Header với Background Gradient - Mobile Optimized */}
+      <div className="relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-emerald-500/5 to-cyan-500/5 rounded-xl sm:rounded-2xl lg:rounded-3xl blur-2xl sm:blur-3xl"></div>
+        
+        <div className="relative flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg sm:shadow-xl">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative group flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-emerald-500 to-cyan-500 rounded-xl sm:rounded-2xl blur-lg sm:blur-xl opacity-60 group-hover:opacity-80 transition-all"></div>
+                <div className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-teal-500 via-emerald-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg sm:shadow-xl">
+                  <Package className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white" />
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 dark:from-teal-400 dark:via-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent leading-tight">
+                  Quản lý sản phẩm
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium mt-0.5 sm:mt-1 line-clamp-1">
+                  Danh mục sản phẩm với thông tin chi tiết và hình ảnh
+                </p>
+              </div>
+            </div>
           </div>
 
-          <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Thêm sản phẩm
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg sm:rounded-xl p-0.5 sm:p-1 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 sm:p-2.5 rounded-md sm:rounded-lg transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md sm:shadow-lg'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Grid3x3 className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 sm:p-2.5 rounded-md sm:rounded-lg transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md sm:shadow-lg'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                <List className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
+
+            <Button className="flex-1 sm:flex-initial bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transition-all h-9 sm:h-10 lg:h-11 px-3 sm:px-4 lg:px-5 text-sm sm:text-base">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+              <span className="font-bold">Thêm sản phẩm</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Products</p>
-                <p className="text-3xl font-bold">{products.length}</p>
+      {/* Stats Cards - Mobile Optimized */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
+        <Card className="group relative border-0 shadow-md sm:shadow-lg bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/20 dark:to-emerald-950/20 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 overflow-hidden active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/0 to-emerald-500/0 group-hover:from-teal-500/10 group-hover:to-emerald-500/10 transition-all"></div>
+          <CardContent className="p-3 sm:p-4 lg:p-5 relative">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-md sm:shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <Package className="w-8 h-8 text-emerald-500" />
+              <Badge className="bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/30 font-bold text-[9px] sm:text-xs px-1.5 py-0.5">
+                Tất cả
+              </Badge>
+            </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">Tổng sản phẩm</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                {products.length}
+              </p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Frozen Items</p>
-                <p className="text-3xl font-bold">
-                  {products.filter((p) => p.tempClass === 'FROZEN').length}
-                </p>
+
+        <Card className="group relative border-0 shadow-md sm:shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 overflow-hidden active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:to-pink-500/10 transition-all"></div>
+          <CardContent className="p-3 sm:p-4 lg:p-5 relative">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md sm:shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all flex-shrink-0">
+                <Snowflake className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <div className="text-4xl">🧊</div>
+              <Badge className="bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30 font-bold text-[9px] sm:text-xs px-1.5 py-0.5 truncate max-w-[60px] sm:max-w-none">
+                🧊
+              </Badge>
+            </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">Đông lạnh</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                {products.filter((p) => p.tempClass === 'FROZEN').length}
+              </p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Chilled Items</p>
-                <p className="text-3xl font-bold">
-                  {products.filter((p) => p.tempClass === 'CHILL').length}
-                </p>
+
+        <Card className="group relative border-0 shadow-md sm:shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 overflow-hidden active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all"></div>
+          <CardContent className="p-3 sm:p-4 lg:p-5 relative">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md sm:shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all flex-shrink-0">
+                <Snowflake className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <div className="text-4xl">❄️</div>
+              <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30 font-bold text-[9px] sm:text-xs px-1.5 py-0.5">
+                ❄️
+              </Badge>
+            </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">Mát</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                {products.filter((p) => p.tempClass === 'CHILL').length}
+              </p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Categories</p>
-                <p className="text-3xl font-bold">{categories.length}</p>
+
+        <Card className="group relative border-0 shadow-md sm:shadow-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 overflow-hidden active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-amber-500/0 group-hover:from-orange-500/10 group-hover:to-amber-500/10 transition-all"></div>
+          <CardContent className="p-3 sm:p-4 lg:p-5 relative">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md sm:shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all flex-shrink-0">
+                <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <Box className="w-8 h-8 text-teal-500" />
+              <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30 font-bold text-[9px] sm:text-xs px-1.5 py-0.5 hidden sm:inline-flex">
+                Cat
+              </Badge>
+            </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">Danh mục</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">
+                {categories.length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative border-0 shadow-md sm:shadow-lg bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 overflow-hidden active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-rose-500/0 group-hover:from-red-500/10 group-hover:to-rose-500/10 transition-all"></div>
+          <CardContent className="p-3 sm:p-4 lg:p-5 relative">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shadow-md sm:shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+              <Badge className="bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30 font-bold animate-pulse text-[9px] sm:text-xs px-1.5 py-0.5">
+                ⚠️
+              </Badge>
+            </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs lg:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-1">Sắp hết</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-red-600 to-rose-600 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent">
+                0
+              </p>
             </div>
           </CardContent>
         </Card>

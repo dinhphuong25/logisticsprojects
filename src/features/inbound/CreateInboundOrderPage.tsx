@@ -27,6 +27,7 @@ import { getAllProducts, getZoneForProduct, type Product as CatalogProduct } fro
 interface Product {
   id: string
   name: string
+  nameVi?: string
   sku: string
   expectedQty: number
   unit: string
@@ -133,10 +134,12 @@ export default function CreateInboundOrderPage() {
     }
   })
 
-  const filteredProducts = PRODUCT_CATALOG.filter(p =>
-    p.name.toLowerCase().includes(searchProduct.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchProduct.toLowerCase())
-  )
+  const filteredProducts = searchProduct 
+    ? PRODUCT_CATALOG.filter(p =>
+        p.name.toLowerCase().includes(searchProduct.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchProduct.toLowerCase())
+      )
+    : PRODUCT_CATALOG // Show all products when search is empty
 
   const filteredSuppliers = SUPPLIERS.filter(s =>
     s.name.toLowerCase().includes(searchSupplier.toLowerCase())
@@ -531,50 +534,124 @@ export default function CreateInboundOrderPage() {
               <CardContent className="p-6 space-y-4">
                 {/* Add Product */}
                 <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Tìm kiếm sản phẩm theo tên hoặc SKU..."
-                      value={searchProduct}
-                      onChange={(e) => {
-                        setSearchProduct(e.target.value)
-                        setShowProductCatalog(true)
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Tìm kiếm sản phẩm theo tên hoặc SKU..."
+                        value={searchProduct}
+                        onChange={(e) => {
+                          setSearchProduct(e.target.value)
+                          setShowProductCatalog(true)
+                        }}
+                        onFocus={() => setShowProductCatalog(true)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setSearchProduct('')
+                        setShowProductCatalog(!showProductCatalog)
                       }}
-                      onFocus={() => setShowProductCatalog(true)}
-                      className="pl-10"
-                    />
+                      className="whitespace-nowrap"
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      {showProductCatalog ? 'Ẩn' : 'Xem tất cả'}
+                    </Button>
                   </div>
-                  {showProductCatalog && searchProduct && filteredProducts.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-80 overflow-auto">
-                      {filteredProducts.map((product) => (
+                  {showProductCatalog && filteredProducts.length > 0 && (
+                    <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-green-500 dark:border-green-400 rounded-lg shadow-2xl max-h-96 overflow-auto">
+                      <div className="sticky top-0 bg-green-50 dark:bg-green-900/30 px-4 py-2 border-b border-green-200 dark:border-green-700 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-green-900 dark:text-green-100">
+                          📦 Danh sách sản phẩm ({filteredProducts.length})
+                        </span>
                         <button
-                          key={product.id}
                           type="button"
-                          onClick={() => addProduct(product)}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b dark:border-gray-700 last:border-0"
+                          onClick={() => setShowProductCatalog(false)}
+                          className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200"
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-gray-900 dark:text-white">{product.name}</p>
-                                {product.stockLevel !== undefined && (
-                                  <Badge className={
-                                    product.stockLevel > 100 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                    product.stockLevel > 50 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                  }>
-                                    Tồn: {product.stockLevel} {product.unit}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {product.sku} • {product.temperature} • Zone: {product.zone}
-                              </p>
-                            </div>
-                            <Plus className="w-5 h-5 text-green-600 flex-shrink-0" />
-                          </div>
+                          ✕
                         </button>
-                      ))}
+                      </div>
+                      {filteredProducts.map((product) => {
+                        const isAdded = formData.products.find(p => p.id === product.id)
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            onClick={() => addProduct(product)}
+                            disabled={!!isAdded}
+                            className={`w-full text-left px-4 py-3 transition-colors border-b dark:border-gray-700 last:border-0 ${
+                              isAdded
+                                ? 'bg-gray-100 dark:bg-gray-700/50 cursor-not-allowed opacity-60'
+                                : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                    {product.name}
+                                  </p>
+                                  {isAdded && (
+                                    <Badge className="bg-green-500 text-white flex-shrink-0">
+                                      ✓ Đã thêm
+                                    </Badge>
+                                  )}
+                                  {!isAdded && product.stockLevel !== undefined && (
+                                    <Badge className={`flex-shrink-0 ${
+                                      product.stockLevel > 100 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                      product.stockLevel > 50 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                      product.stockLevel > 0 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                    }`}>
+                                      Tồn: {product.stockLevel} {product.unit}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                  <span className="font-mono bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">
+                                    {product.sku}
+                                  </span>
+                                  <span>•</span>
+                                  <span className="text-blue-600 dark:text-blue-400">{product.temperature}</span>
+                                  <span>•</span>
+                                  <span className="text-purple-600 dark:text-purple-400">Zone: {product.zone}</span>
+                                </div>
+                              </div>
+                              {!isAdded && (
+                                <div className="flex-shrink-0 w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center">
+                                  <Plus className="w-5 h-5" />
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {showProductCatalog && filteredProducts.length === 0 && searchProduct && (
+                    <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-6 text-center">
+                      <Search className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 dark:text-gray-400 font-medium">
+                        Không tìm thấy sản phẩm "{searchProduct}"
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                        Thử tìm với từ khóa khác hoặc mã SKU
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setSearchProduct('')
+                          setShowProductCatalog(true)
+                        }}
+                        className="mt-3"
+                      >
+                        Xem tất cả sản phẩm
+                      </Button>
                     </div>
                   )}
                 </div>

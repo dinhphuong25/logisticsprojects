@@ -1,0 +1,75 @@
+{
+  "name": "Cold Chain WMS - Quản lý Kho Lạnh",
+  "short_name": "Cold Chain WMS",
+  "description": "Hệ thống quản lý kho lạnh thông minh - Sản phẩm của Nhóm 3 Venture",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Mở trang tổng quan",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-dashboard.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Xuất hàng",
+      "short_name": "Xuất",
+      "description": "Tạo đơn xuất hàng mới",
+      "url": "/outbound/create",
+      "icons": [{ "src": "/icon-outbound.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Nhập hàng",
+      "short_name": "Nhập",
+      "description": "Tạo đơn nhập hàng mới",
+      "url": "/inbound/create",
+      "icons": [{ "src": "/icon-inbound.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Báo cáo",
+      "short_name": "Báo cáo",
+      "description": "Xem báo cáo và thống kê",
+      "url": "/reports",
+      "icons": [{ "src": "/icon-reports.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/",
+  "iarc_rating_id": "",
+  "dir": "ltr",
+  "lang": "vi-VN"
+}

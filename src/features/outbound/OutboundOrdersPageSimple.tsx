@@ -35,7 +35,7 @@ interface OutboundOrder {
   priority: 'HIGH' | 'MEDIUM' | 'LOW'
 }
 
-// Mock data function
+// Mock data function with realistic and varied distribution
 const fetchOutboundOrders = async (): Promise<OutboundOrder[]> => {
   await new Promise(resolve => setTimeout(resolve, 400))
   
@@ -43,11 +43,20 @@ const fetchOutboundOrders = async (): Promise<OutboundOrder[]> => {
   const products = ['Cá hồi đông lạnh', 'Thịt bò tươi', 'Tôm đông lạnh', 'Sữa tươi', 'Rau củ quả']
   const drivers = ['Nguyễn Văn A', 'Trần Văn B', 'Lê Văn C', 'Phạm Văn D']
   const zones = ['CHILL-A', 'CHILL-B', 'FROZEN-A', 'FROZEN-B']
-  const statuses: OutboundOrder['status'][] = ['PENDING', 'PICKING', 'PACKED', 'SHIPPED', 'DELIVERED']
   const priorities: OutboundOrder['priority'][] = ['HIGH', 'MEDIUM', 'LOW']
 
+  // Phân bố trạng thái thực tế và không đều (giống workflow thực tế)
+  // Nhiều đơn đang xử lý ở các giai đoạn giữa, ít hơn ở đầu và cuối
+  const statusDistribution: OutboundOrder['status'][] = [
+    'PENDING', 'PENDING', 'PENDING',              // 3 chờ xử lý
+    'PICKING', 'PICKING', 'PICKING', 'PICKING', 'PICKING', // 5 đang lấy hàng (nhiều nhất)
+    'PACKED', 'PACKED', 'PACKED', 'PACKED',      // 4 đã đóng gói
+    'SHIPPED', 'SHIPPED', 'SHIPPED',             // 3 đang vận chuyển
+    'DELIVERED', 'DELIVERED', 'DELIVERED', 'DELIVERED', 'DELIVERED' // 5 đã giao (nhiều đơn hoàn thành)
+  ]
+
   return Array.from({ length: 20 }, (_, i) => {
-    const status = statuses[i % statuses.length]
+    const status = statusDistribution[i]
     const requestedDate = new Date()
     requestedDate.setDate(requestedDate.getDate() - Math.floor(Math.random() * 7))
     
