@@ -18,6 +18,7 @@ import {
   Sun,
   Radio,
   Zap,
+  Fuel,
 } from 'lucide-react'
 
 const navItems = [
@@ -87,11 +88,20 @@ const navItems = [
     badge: 'NEW'
   },
   { 
+    to: '/generator', 
+    icon: Fuel, 
+    label: 'Máy phát điện',
+    category: 'energy',
+    gradient: 'from-emerald-500 to-teal-500',
+    isSpecial: true,
+    badge: 'HOT'
+  },
+  { 
     to: '/remote-control', 
     icon: Radio, 
     label: 'Điều khiển từ xa',
     category: 'energy',
-    gradient: 'from-orange-500 to-red-500',
+    gradient: 'from-orange-500 to-pink-500',
     isSpecial: true,
     badge: 'HOT'
   },
@@ -161,10 +171,10 @@ export default function Sidebar() {
           {!sidebarCollapsed && (
             <div className="flex-1">
               <h1 className="text-base font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
-                NHÓM 3
+                ECOFRESH
               </h1>
               <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 tracking-wide">
-                VENTURE - ĐMST & KN
+                COLD CHAIN MANAGEMENT
               </p>
             </div>
           )}

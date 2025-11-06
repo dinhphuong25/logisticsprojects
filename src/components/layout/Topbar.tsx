@@ -1,23 +1,16 @@
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
-import { useThemeStore } from '@/stores/themeStore'
 import { useWarehouseStore } from '@/stores/warehouseStore'
 import { useUIStore } from '@/stores/uiStore'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, LogOut, Building2, Globe, Activity, Menu, X } from 'lucide-react'
+import { LogOut, Building2, Activity, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function Topbar() {
   const { i18n } = useTranslation()
   const { user, logout } = useAuthStore()
-  const { isDark, toggle } = useThemeStore()
   const { currentWarehouse } = useWarehouseStore()
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'vi' ? 'en' : 'vi'
-    i18n.changeLanguage(newLang)
-  }
 
   return (
     <header className={cn(
@@ -84,30 +77,6 @@ export default function Topbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Language Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleLanguage}
-            className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 hover:scale-105 w-9 h-9 sm:w-10 sm:h-10"
-          >
-            <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
-          </Button>
-          
-          {/* Theme Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggle}
-            className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 hover:scale-105 w-9 h-9 sm:w-10 sm:h-10"
-          >
-            {isDark ? (
-              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-            ) : (
-              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-            )}
-          </Button>
-
           {/* User Menu */}
           <div className="ml-2 sm:ml-4 group relative">
             <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/80 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer backdrop-blur-xl">

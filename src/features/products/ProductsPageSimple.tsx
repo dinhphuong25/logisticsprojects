@@ -129,14 +129,14 @@ export default function ProductsPageSimple() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
             Quản lý sản phẩm
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-xs md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
             Danh mục sản phẩm với thông tin chi tiết và hình ảnh
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function ProductsPageSimple() {
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
               }`}
             >
-              <Grid3x3 className="w-4 h-4" />
+              <Grid3x3 className="w-3 h-3 md:w-4 md:h-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -162,74 +162,76 @@ export default function ProductsPageSimple() {
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
               }`}
             >
-              <List className="w-4 h-4" />
+              <List className="w-3 h-3 md:w-4 md:h-4" />
             </button>
           </div>
 
-          <Button onClick={() => refetch()} variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Làm mới
+          <Button onClick={() => refetch()} variant="outline" size="sm" className="text-xs md:text-sm">
+            <RefreshCw className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Làm mới</span>
           </Button>
 
           <Button 
             onClick={() => navigate('/products/create')}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+            size="sm"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-xs md:text-sm"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Thêm sản phẩm
+            <Plus className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Thêm</span>
+            <span className="sm:hidden">+</span>
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <Package className="w-8 h-8 text-emerald-600" />
+          <CardContent className="p-3 md:p-5">
+            <div className="flex items-center justify-between mb-1 md:mb-2">
+              <Package className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Tổng sản phẩm</p>
-            <p className="text-3xl font-bold text-emerald-600">{stats.total}</p>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tổng SP</p>
+            <p className="text-xl md:text-3xl font-bold text-emerald-600">{stats.total}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-3xl">🧊</div>
+          <CardContent className="p-3 md:p-5">
+            <div className="flex items-center justify-between mb-1 md:mb-2">
+              <div className="text-2xl md:text-3xl">🧊</div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Đông lạnh</p>
-            <p className="text-3xl font-bold text-purple-600">{stats.frozen}</p>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Đông lạnh</p>
+            <p className="text-xl md:text-3xl font-bold text-purple-600">{stats.frozen}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-3xl">❄️</div>
+          <CardContent className="p-3 md:p-5">
+            <div className="flex items-center justify-between mb-1 md:mb-2">
+              <div className="text-2xl md:text-3xl">❄️</div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Mát</p>
-            <p className="text-3xl font-bold text-blue-600">{stats.chilled}</p>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Mát</p>
+            <p className="text-xl md:text-3xl font-bold text-blue-600">{stats.chilled}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <Box className="w-8 h-8 text-amber-600" />
+          <CardContent className="p-3 md:p-5">
+            <div className="flex items-center justify-between mb-1 md:mb-2">
+              <Box className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Danh mục</p>
-            <p className="text-3xl font-bold text-amber-600">{stats.categories}</p>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Danh mục</p>
+            <p className="text-xl md:text-3xl font-bold text-amber-600">{stats.categories}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+          <CardContent className="p-3 md:p-5">
+            <div className="flex items-center justify-between mb-1 md:mb-2">
+              <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Sắp hết hàng</p>
-            <p className="text-3xl font-bold text-red-600">{stats.lowStock}</p>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Sắp hết</p>
+            <p className="text-xl md:text-3xl font-bold text-red-600">{stats.lowStock}</p>
           </CardContent>
         </Card>
       </div>

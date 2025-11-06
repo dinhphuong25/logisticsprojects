@@ -493,25 +493,25 @@ export default function RemoteControlPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
             Điều khiển từ xa
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 mt-1 md:mt-2">
             Quản lý và điều khiển thiết bị trong kho lạnh
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-800">
+        <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0">
+          <div className="px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-800 shrink-0">
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-green-600" />
+              <Zap className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Tổng công suất</p>
-                <p className="text-lg font-bold text-green-700 dark:text-green-400">
+                <p className="text-sm md:text-lg font-bold text-green-700 dark:text-green-400">
                   {(totalPower / 1000).toFixed(2)} kW
                 </p>
               </div>
@@ -520,7 +520,8 @@ export default function RemoteControlPage() {
 
           <Button 
             variant={autoMode ? "default" : "outline"} 
-            className={`flex items-center gap-2 ${autoMode ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : ''}`}
+            size="sm"
+            className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm shrink-0 ${autoMode ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : ''}`}
             onClick={() => {
               setAutoMode(!autoMode)
               if (!autoMode) {
@@ -531,11 +532,12 @@ export default function RemoteControlPage() {
               }
             }}
           >
-            <Activity className="w-4 h-4" />
-            {autoMode ? 'Chế độ thông minh: BẬT' : 'Chế độ thông minh: TẮT'}
+            <Activity className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">{autoMode ? 'Chế độ thông minh: BẬT' : 'Chế độ thông minh: TẮT'}</span>
+            <span className="sm:hidden">{autoMode ? 'Thông minh' : 'Thủ công'}</span>
           </Button>
 
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="hidden md:flex items-center gap-2 shrink-0">
             <Settings className="w-4 h-4" />
             Cài đặt
           </Button>
@@ -543,105 +545,105 @@ export default function RemoteControlPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         <Button 
           variant="outline" 
-          className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-950/20 border-2 hover:border-purple-500"
+          className="h-auto p-3 md:p-4 flex flex-col items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-950/20 border-2 hover:border-purple-500"
           onClick={() => applySmartLogic()}
         >
-          <Activity className="w-6 h-6 text-purple-600" />
+          <Activity className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
           <div className="text-center">
-            <p className="font-bold">Điều khiển thông minh</p>
-            <p className="text-xs text-gray-500">Tự động điều chỉnh thiết bị</p>
+            <p className="text-sm md:text-base font-bold">Điều khiển thông minh</p>
+            <p className="text-xs text-gray-500 hidden md:block">Tự động điều chỉnh thiết bị</p>
           </div>
         </Button>
 
         <Button 
           variant="outline" 
-          className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-green-50 dark:hover:bg-green-950/20 border-2 hover:border-green-500"
+          className="h-auto p-3 md:p-4 flex flex-col items-center gap-2 hover:bg-green-50 dark:hover:bg-green-950/20 border-2 hover:border-green-500"
           onClick={() => optimizeEnergy()}
         >
-          <Zap className="w-6 h-6 text-green-600" />
+          <Zap className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
           <div className="text-center">
-            <p className="font-bold">Tối ưu năng lượng</p>
-            <p className="text-xs text-gray-500">Giảm mức tiêu thụ điện</p>
+            <p className="text-sm md:text-base font-bold">Tối ưu năng lượng</p>
+            <p className="text-xs text-gray-500 hidden md:block">Giảm mức tiêu thụ điện</p>
           </div>
         </Button>
 
         <Button 
           variant="outline" 
-          className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-orange-50 dark:hover:bg-orange-950/20 border-2 hover:border-orange-500"
+          className="h-auto p-3 md:p-4 flex flex-col items-center gap-2 hover:bg-orange-50 dark:hover:bg-orange-950/20 border-2 hover:border-orange-500 sm:col-span-2 md:col-span-1"
           onClick={() => checkPowerUsage()}
         >
-          <Gauge className="w-6 h-6 text-orange-600" />
+          <Gauge className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
           <div className="text-center">
-            <p className="font-bold">Kiểm tra công suất</p>
-            <p className="text-xs text-gray-500">Phân tích mức sử dụng</p>
+            <p className="text-sm md:text-base font-bold">Kiểm tra công suất</p>
+            <p className="text-xs text-gray-500 hidden md:block">Phân tích mức sử dụng</p>
           </div>
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Đang hoạt động</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Hoạt động</p>
+                <p className="text-xl md:text-2xl font-bold text-green-600">
                   {devices.filter((d) => d.status === 'ON').length}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Power className="w-5 h-5 text-green-600" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <Power className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-gray-500">
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Đang tắt</p>
-                <p className="text-2xl font-bold text-gray-600">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Đang tắt</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-600">
                   {devices.filter((d) => d.status === 'OFF').length}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-900/30 flex items-center justify-center">
-                <ZapOff className="w-5 h-5 text-gray-600" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gray-100 dark:bg-gray-900/30 flex items-center justify-center">
+                <ZapOff className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Chế độ tự động</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tự động</p>
+                <p className="text-xl md:text-2xl font-bold text-blue-600">
                   {devices.filter((d) => d.status === 'AUTO').length}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-blue-600" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Activity className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-red-500">
-          <CardContent className="p-4">
+          <CardContent className="p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Lỗi</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Lỗi</p>
+                <p className="text-xl md:text-2xl font-bold text-red-600">
                   {devices.filter((d) => d.status === 'FAULT').length}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <ZapOff className="w-5 h-5 text-red-600" />
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <ZapOff className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
               </div>
             </div>
           </CardContent>
@@ -650,13 +652,14 @@ export default function RemoteControlPage() {
 
       {/* Zone Filter */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-3 md:p-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium">Khu vực:</span>
+            <span className="text-xs md:text-sm font-medium">Khu vực:</span>
             <Button
               size="sm"
               variant={selectedZone === 'all' ? 'default' : 'outline'}
               onClick={() => setSelectedZone('all')}
+              className="text-xs"
             >
               Tất cả
             </Button>
@@ -666,6 +669,7 @@ export default function RemoteControlPage() {
                 size="sm"
                 variant={selectedZone === zone ? 'default' : 'outline'}
                 onClick={() => setSelectedZone(zone)}
+                className="text-xs"
               >
                 {zone}
               </Button>
@@ -675,7 +679,7 @@ export default function RemoteControlPage() {
       </Card>
 
       {/* Devices Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredDevices.map((device) => {
           const Icon = getDeviceIcon(device.type)
           return (
@@ -689,24 +693,24 @@ export default function RemoteControlPage() {
                   : ''
               }`}
             >
-              <CardHeader>
+              <CardHeader className="pb-3 md:pb-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center shadow-md ${
                         device.status === 'ON'
                           ? 'bg-gradient-to-br from-green-500 to-emerald-500'
                           : 'bg-gray-200 dark:bg-gray-700'
                       }`}
                     >
                       <Icon
-                        className={`w-6 h-6 ${
+                        className={`w-5 h-5 md:w-6 md:h-6 ${
                           device.status === 'ON' ? 'text-white' : 'text-gray-600'
                         }`}
                       />
                     </div>
                     <div>
-                      <CardTitle className="text-base">{device.nameVi}</CardTitle>
+                      <CardTitle className="text-sm md:text-base">{device.nameVi}</CardTitle>
                       <p className="text-xs text-gray-500">{device.zone}</p>
                     </div>
                   </div>
@@ -715,25 +719,25 @@ export default function RemoteControlPage() {
                     variant="ghost"
                     onClick={() => handleToggle(device.id, device.status)}
                     disabled={controlDeviceMutation.isPending || device.status === 'FAULT'}
-                    className={
+                    className={`p-1 ${
                       device.status === 'ON'
                         ? 'text-green-600 hover:text-green-700'
                         : 'text-gray-600 hover:text-gray-700'
-                    }
+                    }`}
                   >
                     {device.status === 'ON' ? (
-                      <ToggleRight className="w-8 h-8" />
+                      <ToggleRight className="w-7 h-7 md:w-8 md:h-8" />
                     ) : (
-                      <ToggleLeft className="w-8 h-8" />
+                      <ToggleLeft className="w-7 h-7 md:w-8 md:h-8" />
                     )}
                   </Button>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 md:space-y-4 pt-0">
                 {/* Status Badge */}
                 <div className="flex items-center justify-between">
-                  <Badge className={getStatusColor(device.status)}>
+                  <Badge className={`text-xs ${getStatusColor(device.status)}`}>
                     {device.status === 'ON'
                       ? 'Đang bật'
                       : device.status === 'OFF'
@@ -742,7 +746,7 @@ export default function RemoteControlPage() {
                       ? 'Tự động'
                       : 'Lỗi'}
                   </Badge>
-                  <span className="text-sm font-semibold">
+                  <span className="text-xs md:text-sm font-semibold">
                     {device.power}W
                   </span>
                 </div>
@@ -751,8 +755,8 @@ export default function RemoteControlPage() {
                 {device.type === 'FAN' && device.speed !== undefined && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Tốc độ</span>
-                      <span className="text-sm font-bold">{device.speed}%</span>
+                      <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tốc độ</span>
+                      <span className="text-xs md:text-sm font-bold">{device.speed}%</span>
                     </div>
                     <input
                       type="range"
@@ -761,7 +765,7 @@ export default function RemoteControlPage() {
                       value={device.speed}
                       onChange={(e) => handleSpeedChange(device.id, Number(e.target.value))}
                       disabled={device.status !== 'ON'}
-                      className="w-full"
+                      className="w-full h-2"
                     />
                   </div>
                 )}
@@ -770,8 +774,8 @@ export default function RemoteControlPage() {
                 {device.type === 'LIGHT' && device.brightness !== undefined && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Độ sáng</span>
-                      <span className="text-sm font-bold">{device.brightness}%</span>
+                      <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Độ sáng</span>
+                      <span className="text-xs md:text-sm font-bold">{device.brightness}%</span>
                     </div>
                     <input
                       type="range"
@@ -779,16 +783,16 @@ export default function RemoteControlPage() {
                       max="100"
                       value={device.brightness}
                       disabled={device.status !== 'ON'}
-                      className="w-full"
+                      className="w-full h-2"
                     />
                   </div>
                 )}
 
                 {/* Temperature for Compressors */}
                 {device.type === 'COMPRESSOR' && device.temperature !== undefined && (
-                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Nhiệt độ</span>
-                    <span className="text-lg font-bold text-blue-600">
+                  <div className="flex items-center justify-between p-2 md:p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                    <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Nhiệt độ</span>
+                    <span className="text-base md:text-lg font-bold text-blue-600">
                       {device.temperature}°C
                     </span>
                   </div>
@@ -799,7 +803,7 @@ export default function RemoteControlPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 text-xs"
                     onClick={() =>
                       controlDeviceMutation.mutate({ id: device.id, action: 'setMode', value: 'AUTO' })
                     }
@@ -810,7 +814,7 @@ export default function RemoteControlPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 text-xs"
                     onClick={() =>
                       controlDeviceMutation.mutate({ id: device.id, action: 'reset' })
                     }

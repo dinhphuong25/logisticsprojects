@@ -37,13 +37,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <footer className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                ĐỔI MỚI SÁNG TẠO VÀ KHỞI NGHIỆP
+                MÔN HỌC ĐỔI MỚI SÁNG TẠO VÀ KHỞI NGHIỆP
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                SẢN PHẨM CỦA <span className="font-bold text-blue-600 dark:text-blue-400">NHÓM 3 - VENTURE</span>
+                Được thực hiện bởi <span className="font-bold text-blue-600 dark:text-blue-400">NHÓM 3</span>
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                © 2025 All Rights Reserved. Hệ thống quản lý kho lạnh thông minh
+                © 2025 All Rights Reserved
               </p>
             </div>
           </footer>

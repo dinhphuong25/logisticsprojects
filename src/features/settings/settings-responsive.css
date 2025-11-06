@@ -1,0 +1,224 @@
+/* Settings Page Mobile Optimizations */
+
+/* Mobile-specific adjustments for Settings Page */
+@media (max-width: 640px) {
+  /* Compact spacing on mobile */
+  .settings-container {
+    padding: 0.75rem;
+  }
+
+  /* Stack cards vertically with tight spacing */
+  .settings-card-grid {
+    gap: 0.75rem;
+  }
+
+  /* Reduce card padding on mobile */
+  .settings-card {
+    padding: 0.75rem;
+  }
+
+  /* Adjust font sizes for mobile */
+  .settings-title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  .settings-subtitle {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  /* Make buttons more touch-friendly */
+  .settings-button {
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+  }
+
+  /* Optimize input fields */
+  .settings-input {
+    min-height: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* Compact tabs on mobile */
+  .settings-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .settings-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* Better touch targets for tab buttons */
+  .settings-tab-button {
+    min-width: 80px;
+    white-space: nowrap;
+  }
+}
+
+/* Tablet optimization (640px - 1024px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .settings-container {
+    padding: 1rem;
+  }
+
+  .settings-card-grid {
+    gap: 1rem;
+  }
+
+  /* Two-column layout for cards on tablets */
+  .settings-warehouse-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop optimization (1024px+) */
+@media (min-width: 1024px) {
+  .settings-container {
+    padding: 1.5rem;
+  }
+
+  .settings-card-grid {
+    gap: 1.5rem;
+  }
+
+  /* Full grid layout on desktop */
+  .settings-warehouse-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .settings-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .settings-title {
+    font-size: 1.125rem;
+  }
+
+  .settings-tab-button {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .settings-icon {
+    /* Use higher resolution icons if available */
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets */
+  .settings-interactive {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .settings-hover-effect:hover {
+    transform: none;
+  }
+
+  /* Increase spacing between interactive elements */
+  .settings-button-group {
+    gap: 0.75rem;
+  }
+}
+
+/* Dark mode specific mobile adjustments */
+@media (prefers-color-scheme: dark) and (max-width: 640px) {
+  .settings-card {
+    background-color: rgba(17, 24, 39, 0.9);
+    border-color: rgba(75, 85, 99, 0.3);
+  }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: high) {
+  .settings-card {
+    border-width: 2px;
+  }
+
+  .settings-button {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .settings-animated {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1536px) {
+  .settings-container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .settings-warehouse-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 375px) {
+  .settings-header {
+    padding: 0.5rem;
+  }
+
+  .settings-title {
+    font-size: 1rem;
+  }
+
+  .settings-button-text {
+    display: none; /* Show icons only on very small screens */
+  }
+
+  .settings-card {
+    padding: 0.5rem;
+  }
+}
+
+/* iOS safe area support */
+@supports (padding: max(0px)) {
+  .settings-mobile-header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .settings-mobile-footer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Print styles for Settings page */
+@media print {
+  .settings-header-actions,
+  .settings-tabs,
+  .settings-ai-recommendations {
+    display: none !important;
+  }
+
+  .settings-card {
+    page-break-inside: avoid;
+    border: 1px solid #000;
+  }
+
+  .settings-warehouse-grid {
+    grid-template-columns: 1fr;
+  }
+}

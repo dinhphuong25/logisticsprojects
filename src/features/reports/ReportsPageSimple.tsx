@@ -26,6 +26,8 @@ import {
   Zap
 } from 'lucide-react'
 import { toast } from 'sonner'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 interface Report {
   id: string
@@ -316,11 +318,214 @@ export default function ReportsPageSimple() {
       toast.warning('Báo cáo chưa sẵn sàng')
       return
     }
-    toast.success(`Đang tải xuống: ${report.name}`)
-    // Simulate download
-    setTimeout(() => {
-      toast.success('Tải xuống thành công!')
-    }, 1500)
+    
+    toast.loading('Đang tạo file PDF...', { id: 'pdf-download' })
+    
+    try {
+      // Create new PDF document
+      const doc = new jsPDF()
+      
+      // Add Vietnamese font support (using default font for now)
+      doc.setFont('helvetica')
+      
+      // Header
+      doc.setFontSize(20)
+      doc.setTextColor(99, 102, 241) // Indigo color
+      doc.text(report.name, 15, 20)
+      
+      // Subheader
+      doc.setFontSize(12)
+      doc.setTextColor(107, 114, 128) // Gray color
+      doc.text(report.description, 15, 30)
+      
+      // Divider line
+      doc.setDrawColor(229, 231, 235)
+      doc.line(15, 35, 195, 35)
+      
+      // Report Info
+      doc.setFontSize(10)
+      doc.setTextColor(0, 0, 0)
+      let yPos = 45
+      
+      doc.text(`Loai bao cao: ${getReportTypeName(report.type)}`, 15, yPos)
+      yPos += 7
+      doc.text(`Thoi gian: ${report.period}`, 15, yPos)
+      yPos += 7
+      doc.text(`Dinh dang: ${report.format}`, 15, yPos)
+      yPos += 7
+      doc.text(`Kich thuoc: ${report.fileSize}`, 15, yPos)
+      yPos += 7
+      doc.text(`Ngay tao: ${new Date(report.generatedAt).toLocaleString('vi-VN')}`, 15, yPos)
+      yPos += 7
+      doc.text(`Luot tai: ${report.downloads}`, 15, yPos)
+      
+      // Add some sample data based on report type
+      yPos += 15
+      doc.setFontSize(14)
+      doc.setTextColor(99, 102, 241)
+      doc.text('Thong tin chi tiet', 15, yPos)
+      
+      yPos += 10
+      doc.setFontSize(10)
+      doc.setTextColor(0, 0, 0)
+      
+      // Add table based on report type
+      const tableData = generateTableData(report.type)
+      
+      // @ts-expect-error - jspdf-autotable types
+      doc.autoTable({
+        startY: yPos,
+        head: [tableData.headers],
+        body: tableData.rows,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [99, 102, 241],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 3
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251]
+        }
+      })
+      
+      // Footer
+      // @ts-expect-error - jspdf-autotable finalY property
+      const finalY = doc.lastAutoTable.finalY || yPos + 50
+      doc.setFontSize(8)
+      doc.setTextColor(156, 163, 175)
+      doc.text('Bao cao duoc tao tu He thong Quan ly Kho Lanh', 15, finalY + 15)
+      doc.text(`Ngay tai xuong: ${new Date().toLocaleString('vi-VN')}`, 15, finalY + 20)
+      
+      // Save PDF
+      const fileName = `${report.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+      doc.save(fileName)
+      
+      toast.success('Tải xuống thành công!', { id: 'pdf-download' })
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast.error('Không thể tạo file PDF', { id: 'pdf-download' })
+    }
+  }
+  
+  const getReportTypeName = (type: string): string => {
+    const typeMap: Record<string, string> = {
+      'INVENTORY': 'Ton kho',
+      'INBOUND': 'Nhap hang',
+      'OUTBOUND': 'Xuat hang',
+      'TEMPERATURE': 'Nhiet do',
+      'ENERGY': 'Nang luong',
+      'FINANCIAL': 'Tai chinh',
+      'CUSTOMER': 'Khach hang',
+      'PERFORMANCE': 'Hieu suat'
+    }
+    return typeMap[type] || type
+  }
+  
+  const generateTableData = (type: string) => {
+    switch (type) {
+      case 'INVENTORY':
+        return {
+          headers: ['Ma SP', 'Ten san pham', 'So luong', 'Gia tri', 'Trang thai'],
+          rows: [
+            ['SKU001', 'Thit bo dong lanh', '250 kg', '75,000,000 VND', 'Ton kho'],
+            ['SKU002', 'Ca hoi tuoi', '180 kg', '54,000,000 VND', 'Ton kho'],
+            ['SKU003', 'Rau cu qua', '320 kg', '12,800,000 VND', 'Ton kho'],
+            ['SKU004', 'Thuc pham dong lanh', '450 kg', '90,000,000 VND', 'Ton kho'],
+            ['SKU005', 'Sua tuoi', '200 lit', '20,000,000 VND', 'Ton kho']
+          ]
+        }
+      case 'INBOUND':
+        return {
+          headers: ['Ma don', 'Nha cung cap', 'So luong', 'Thoi gian', 'Trang thai'],
+          rows: [
+            ['IB-001', 'ABC Foods Co.', '500 kg', '05/11/2025 08:30', 'Hoan thanh'],
+            ['IB-002', 'Fresh Market Ltd', '350 kg', '05/11/2025 10:15', 'Hoan thanh'],
+            ['IB-003', 'Cold Chain Pro', '420 kg', '05/11/2025 14:20', 'Hoan thanh'],
+            ['IB-004', 'VN Logistics', '280 kg', '05/11/2025 16:45', 'Dang xu ly'],
+            ['IB-005', 'Import Export JSC', '600 kg', '06/11/2025 09:00', 'Dang xu ly']
+          ]
+        }
+      case 'OUTBOUND':
+        return {
+          headers: ['Ma don', 'Khach hang', 'So luong', 'Thoi gian giao', 'Trang thai'],
+          rows: [
+            ['OB-001', 'Sieu thi BigC', '320 kg', '05/11/2025 07:00', 'Da giao'],
+            ['OB-002', 'Nha hang Luxury', '150 kg', '05/11/2025 09:30', 'Da giao'],
+            ['OB-003', 'Cua hang thuc pham', '200 kg', '05/11/2025 11:00', 'Da giao'],
+            ['OB-004', 'Khach si', '450 kg', '05/11/2025 15:30', 'Dang giao'],
+            ['OB-005', 'Sieu thi Co.op', '380 kg', '06/11/2025 08:00', 'Cho giao']
+          ]
+        }
+      case 'TEMPERATURE':
+        return {
+          headers: ['Khu vuc', 'Nhiet do TB', 'Min', 'Max', 'Canh bao'],
+          rows: [
+            ['Zone A', '-2°C', '-4°C', '0°C', 'Khong'],
+            ['Zone B', '-18°C', '-20°C', '-16°C', 'Khong'],
+            ['Zone C', '2°C', '0°C', '4°C', 'Khong'],
+            ['Zone D', '-15°C', '-18°C', '-12°C', '1 lan'],
+            ['Zone E', '5°C', '3°C', '7°C', 'Khong']
+          ]
+        }
+      case 'ENERGY':
+        return {
+          headers: ['Ngay', 'San luong (kWh)', 'Tieu thu (kWh)', 'Tiet kiem', 'Hieu suat'],
+          rows: [
+            ['01/11/2025', '145.2', '180.5', '35,000 VND', '88%'],
+            ['02/11/2025', '152.8', '175.3', '38,000 VND', '92%'],
+            ['03/11/2025', '138.5', '182.1', '32,000 VND', '85%'],
+            ['04/11/2025', '160.3', '178.9', '42,000 VND', '94%'],
+            ['05/11/2025', '148.7', '176.2', '36,000 VND', '89%']
+          ]
+        }
+      case 'FINANCIAL':
+        return {
+          headers: ['Hang muc', 'Doanh thu', 'Chi phi', 'Loi nhuan', 'Ty suat'],
+          rows: [
+            ['Tuan 1', '450,000,000', '280,000,000', '170,000,000', '37.8%'],
+            ['Tuan 2', '520,000,000', '310,000,000', '210,000,000', '40.4%'],
+            ['Tuan 3', '480,000,000', '295,000,000', '185,000,000', '38.5%'],
+            ['Tuan 4', '510,000,000', '305,000,000', '205,000,000', '40.2%'],
+            ['Tong', '1,960,000,000', '1,190,000,000', '770,000,000', '39.3%']
+          ]
+        }
+      case 'CUSTOMER':
+        return {
+          headers: ['Khach hang', 'So don', 'Tong gia tri', 'Trung binh', 'Xep hang'],
+          rows: [
+            ['Sieu thi BigC', '45', '850,000,000', '18,888,889', 'VIP'],
+            ['Co.op Mart', '38', '720,000,000', '18,947,368', 'VIP'],
+            ['Nha hang Luxury', '52', '680,000,000', '13,076,923', 'Gold'],
+            ['Khach si ABC', '28', '560,000,000', '20,000,000', 'VIP'],
+            ['Cua hang XYZ', '65', '420,000,000', '6,461,538', 'Silver']
+          ]
+        }
+      case 'PERFORMANCE':
+        return {
+          headers: ['Chi tieu', 'Muc tieu', 'Thuc te', 'Dat duoc', 'Danh gia'],
+          rows: [
+            ['Toc do nhap hang', '500 kg/h', '520 kg/h', '104%', 'Tot'],
+            ['Do chinh xac', '99%', '98.5%', '99.5%', 'Tot'],
+            ['Thoi gian giao hang', '2h', '1.8h', '110%', 'Xuat sac'],
+            ['Ty le loi', '< 1%', '0.5%', '200%', 'Xuat sac'],
+            ['Hieu suat nang luong', '90%', '92%', '102%', 'Tot']
+          ]
+        }
+      default:
+        return {
+          headers: ['Tieu de', 'Gia tri', 'Ghi chu'],
+          rows: [
+            ['Du lieu mau 1', '100', 'Thong tin chi tiet'],
+            ['Du lieu mau 2', '200', 'Thong tin chi tiet'],
+            ['Du lieu mau 3', '300', 'Thong tin chi tiet']
+          ]
+        }
+    }
   }
 
   const handlePreview = (report: Report) => {
@@ -348,90 +553,91 @@ export default function ReportsPageSimple() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
             Báo cáo & Phân tích
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs md:text-base text-gray-500 dark:text-gray-400 mt-1 md:mt-2">
             Tạo và tải xuống báo cáo chi tiết về hoạt động kho lạnh
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20">
-            <Calendar className="w-4 h-4 mr-2" />
-            Lên lịch báo cáo
+        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 md:pb-0">
+          <Button variant="outline" size="sm" className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shrink-0 text-xs md:text-sm">
+            <Calendar className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Lên lịch</span>
           </Button>
-          <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg">
-            <FileText className="w-4 h-4 mr-2" />
-            Tạo báo cáo mới
+          <Button size="sm" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shrink-0 text-xs md:text-sm">
+            <FileText className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Tạo báo cáo</span>
+            <span className="sm:hidden">Tạo</span>
           </Button>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng báo cáo</p>
-                <p className="text-4xl font-bold text-blue-600">{stats.total}</p>
-                <Badge className="bg-blue-500 text-white mt-2">+12%</Badge>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng báo cáo</p>
+                <p className="text-2xl md:text-4xl font-bold text-blue-600">{stats.total}</p>
+                <Badge className="bg-blue-500 text-white mt-1 md:mt-2 text-xs">+12%</Badge>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <BarChart3 className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Sẵn sàng tải</p>
-                <p className="text-4xl font-bold text-green-600">{stats.ready}</p>
-                <Badge className="bg-green-500 text-white mt-2">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">Sẵn sàng</p>
+                <p className="text-2xl md:text-4xl font-bold text-green-600">{stats.ready}</p>
+                <Badge className="bg-green-500 text-white mt-1 md:mt-2 text-xs">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Active
+                  OK
                 </Badge>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <CheckCircle className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Thời gian xử lý TB</p>
-                <p className="text-4xl font-bold text-purple-600">{stats.avgTime}s</p>
-                <Badge className="bg-purple-500 text-white mt-2">-8%</Badge>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">Thời gian TB</p>
+                <p className="text-2xl md:text-4xl font-bold text-purple-600">{stats.avgTime}s</p>
+                <Badge className="bg-purple-500 text-white mt-1 md:mt-2 text-xs">-8%</Badge>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Clock className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Clock className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Lượt tải xuống</p>
-                <p className="text-4xl font-bold text-orange-600">{stats.downloads}</p>
-                <Badge className="bg-orange-500 text-white mt-2">+24%</Badge>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">Tải xuống</p>
+                <p className="text-2xl md:text-4xl font-bold text-orange-600">{stats.downloads}</p>
+                <Badge className="bg-orange-500 text-white mt-1 md:mt-2 text-xs">+24%</Badge>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
-                <Download className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                <Download className="w-5 h-5 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </CardContent>
@@ -440,11 +646,11 @@ export default function ReportsPageSimple() {
 
       {/* Period & Type Selector */}
       <Card className="border-0 shadow-xl">
-        <CardHeader>
-          <CardTitle>Chọn khoảng thời gian báo cáo</CardTitle>
+        <CardHeader className="pb-3 md:pb-6">
+          <CardTitle className="text-base md:text-lg">Chọn khoảng thời gian báo cáo</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
+        <CardContent className="pt-0">
+          <div className="flex flex-wrap gap-2 md:gap-3">
             {[
               { value: 'today', label: 'Hôm nay' },
               { value: 'week', label: 'Tuần này' },
@@ -454,9 +660,10 @@ export default function ReportsPageSimple() {
             ].map((period) => (
               <Button
                 key={period.value}
+                size="sm"
                 variant={selectedPeriod === period.value ? 'default' : 'outline'}
                 onClick={() => setSelectedPeriod(period.value)}
-                className={selectedPeriod === period.value ? 'bg-gradient-to-r from-purple-600 to-indigo-600' : ''}
+                className={`text-xs md:text-sm ${selectedPeriod === period.value ? 'bg-gradient-to-r from-purple-600 to-indigo-600' : ''}`}
               >
                 {period.label}
               </Button>
@@ -467,18 +674,19 @@ export default function ReportsPageSimple() {
 
       {/* Report Types Grid */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Loại báo cáo</h2>
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Loại báo cáo</h2>
           <Button
+            size="sm"
             variant="outline"
             onClick={() => setSelectedType('ALL')}
-            className={selectedType === 'ALL' ? 'border-purple-500 text-purple-600' : ''}
+            className={`text-xs md:text-sm ${selectedType === 'ALL' ? 'border-purple-500 text-purple-600' : ''}`}
           >
             Tất cả ({reports?.length})
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
           {reportTypes.map((type) => {
             const Icon = type.icon
             return (
@@ -489,13 +697,13 @@ export default function ReportsPageSimple() {
                 }`}
                 onClick={() => setSelectedType(type.id)}
               >
-                <CardContent className="p-6">
-                  <div className={`w-14 h-14 rounded-2xl ${type.iconBg} flex items-center justify-center mb-4`}>
-                    <Icon className={`w-7 h-7 ${type.iconColor}`} />
+                <CardContent className="p-4 md:p-6">
+                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl ${type.iconBg} flex items-center justify-center mb-3 md:mb-4`}>
+                    <Icon className={`w-5 h-5 md:w-7 md:h-7 ${type.iconColor}`} />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{type.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{type.description}</p>
-                  <Badge className={`bg-gradient-to-r ${type.color} text-white`}>
+                  <h3 className="text-sm md:text-xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">{type.name}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3 line-clamp-2">{type.description}</p>
+                  <Badge className={`bg-gradient-to-r ${type.color} text-white text-xs`}>
                     {type.count} báo cáo
                   </Badge>
                 </CardContent>
@@ -507,16 +715,16 @@ export default function ReportsPageSimple() {
 
       {/* Reports List */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
             {selectedType === 'ALL' ? 'Tất cả báo cáo' : reportTypes.find(t => t.id === selectedType)?.name}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
             {filteredReports.length} báo cáo
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {filteredReports.map((report) => {
             const FormatIcon = getFormatIcon(report.format)
             const typeConfig = reportTypes.find(t => t.id === report.type)
@@ -524,54 +732,54 @@ export default function ReportsPageSimple() {
 
             return (
               <Card key={report.id} className="border-0 shadow-xl hover:shadow-2xl transition-all group">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
+                <CardHeader className="pb-3 md:pb-4">
+                  <div className="flex items-start gap-3 md:gap-4">
                     {/* Icon */}
-                    <div className={`w-16 h-16 rounded-2xl ${typeConfig?.iconBg} flex items-center justify-center flex-shrink-0`}>
-                      <TypeIcon className={`w-8 h-8 ${typeConfig?.iconColor}`} />
+                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl ${typeConfig?.iconBg} flex items-center justify-center flex-shrink-0`}>
+                      <TypeIcon className={`w-6 h-6 md:w-8 md:h-8 ${typeConfig?.iconColor}`} />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <CardTitle className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
+                      <div className="flex items-start justify-between gap-2 mb-1 md:mb-2">
+                        <CardTitle className="text-sm md:text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
                           {report.name}
                         </CardTitle>
                         {report.downloads > 50 && (
-                          <Star className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                          <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0" />
                         )}
                       </div>
 
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3 line-clamp-2 hidden sm:block">
                         {report.description}
                       </p>
 
                       {/* Meta Info */}
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                         {getStatusBadge(report.status)}
                         <div className="flex items-center gap-1">
-                          <FormatIcon className="w-4 h-4" />
+                          <FormatIcon className="w-3 h-3 md:w-4 md:h-4" />
                           <span>{report.format}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
+                        <div className="hidden sm:flex items-center gap-1">
+                          <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                           <span>{report.period}</span>
                         </div>
                         {report.status === 'READY' && (
                           <>
                             <div className="flex items-center gap-1">
-                              <Package className="w-4 h-4" />
+                              <Package className="w-3 h-3 md:w-4 md:h-4" />
                               <span>{report.fileSize}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Download className="w-4 h-4" />
+                            <div className="hidden md:flex items-center gap-1">
+                              <Download className="w-3 h-3 md:w-4 md:h-4" />
                               <span>{report.downloads} lượt</span>
                             </div>
                           </>
                         )}
                       </div>
 
-                      <div className="mt-2 text-xs text-gray-400">
+                      <div className="mt-1 md:mt-2 text-xs text-gray-400">
                         <Clock className="w-3 h-3 inline mr-1" />
                         {getTimeAgo(report.generatedAt)}
                       </div>
@@ -579,25 +787,25 @@ export default function ReportsPageSimple() {
                   </div>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handlePreview(report)}
                       disabled={report.status !== 'READY'}
-                      className="flex-1"
+                      className="flex-1 text-xs hidden sm:flex"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Xem trước
+                      <Eye className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                      <span className="hidden md:inline">Xem trước</span>
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => handleDownload(report)}
                       disabled={report.status !== 'READY'}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-xs"
                     >
-                      <Download className="w-4 h-4 mr-2" />
+                      <Download className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                       Tải xuống
                     </Button>
                     <Button
@@ -605,16 +813,18 @@ export default function ReportsPageSimple() {
                       variant="outline"
                       onClick={handleShare}
                       disabled={report.status !== 'READY'}
+                      className="px-2 md:px-3"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <Share2 className="w-3 h-3 md:w-4 md:h-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={handleEmail}
                       disabled={report.status !== 'READY'}
+                      className="px-2 md:px-3 hidden sm:flex"
                     >
-                      <Mail className="w-4 h-4" />
+                      <Mail className="w-3 h-3 md:w-4 md:h-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -626,14 +836,14 @@ export default function ReportsPageSimple() {
 
       {/* Popular Reports */}
       <Card className="border-0 shadow-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-950/20 dark:via-indigo-950/20 dark:to-blue-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <Star className="w-6 h-6 text-yellow-500" />
+        <CardHeader className="pb-3 md:pb-6">
+          <CardTitle className="flex items-center gap-2 md:gap-3 text-base md:text-lg">
+            <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
             Báo cáo phổ biến nhất
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             {reports
               ?.filter(r => r.status === 'READY')
               .sort((a, b) => b.downloads - a.downloads)
@@ -641,18 +851,18 @@ export default function ReportsPageSimple() {
               .map((report, index) => (
                 <div
                   key={report.id}
-                  className="p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all"
+                  className="p-3 md:p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                  <div className="flex items-center gap-2 md:gap-3 mb-2">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
                       #{index + 1}
                     </Badge>
-                    <Badge variant="outline">{report.downloads} lượt tải</Badge>
+                    <Badge variant="outline" className="text-xs">{report.downloads} lượt</Badge>
                   </div>
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+                  <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
                     {report.name}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{report.period}</p>
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{report.period}</p>
                 </div>
               ))}
           </div>

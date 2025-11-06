@@ -24,6 +24,7 @@ import CreateProductPage from './features/products/CreateProductPage'
 import ProductDetailPage from './features/products/ProductDetailPage'
 import EditProductPage from './features/products/EditProductPage'
 import EnergyManagementPage from './features/energy/EnergyManagementPageSimple'
+import GeneratorPage from './features/energy/GeneratorPage'
 import RemoteControlPage from './features/remote-control/RemoteControlPage'
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
                   <Route path="/products/:productId" element={<ProductDetailPage />} />
                   <Route path="/products/:productId/edit" element={<EditProductPage />} />
                   <Route path="/energy" element={<EnergyManagementPage />} />
+                  <Route path="/generator" element={<GeneratorPage />} />
                   <Route path="/remote-control" element={<RemoteControlPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
