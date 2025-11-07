@@ -30,6 +30,9 @@ import GeneratorPage from './features/energy/GeneratorPage'
 import RemoteControlPage from './features/remote-control/RemoteControlPage'
 import { BlockchainTracking } from './features/blockchain/BlockchainTracking'
 import { BlockchainProductRegistration } from './features/blockchain/BlockchainProductRegistration'
+import { MekongDeltaAgricultureDashboard } from './features/agriculture/MekongDeltaAgricultureDashboard'
+import { MekongDeltaWeatherMonitoring } from './features/agriculture/MekongDeltaWeatherMonitoring'
+import { MekongDeltaTransportationHub } from './features/agriculture/MekongDeltaTransportationHub'
 
 function App() {
   return (
@@ -256,6 +259,30 @@ function AppContainer() {
               element={
                 <AnimatedPage>
                   <BlockchainProductRegistration />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/agriculture"
+              element={
+                <AnimatedPage>
+                  <MekongDeltaAgricultureDashboard />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/weather"
+              element={
+                <AnimatedPage>
+                  <MekongDeltaWeatherMonitoring />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/transportation"
+              element={
+                <AnimatedPage>
+                  <MekongDeltaTransportationHub />
                 </AnimatedPage>
               }
             />

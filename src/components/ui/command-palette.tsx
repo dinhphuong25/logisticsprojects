@@ -18,6 +18,9 @@ import {
   MapPin,
   Grid3x3,
   Shield,
+  Sprout,
+  Cloud,
+  Ship,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -193,6 +196,33 @@ export function CommandPalette() {
       category: 'Navigation',
       action: () => navigate('/blockchain/register'),
       keywords: ['blockchain', 'register', 'new']
+    },
+    {
+      id: 'nav-agriculture',
+      label: 'Nông Sản ĐBSCL',
+      description: 'Quản lý nông sản Đồng bằng Sông Cửu Long',
+      icon: Sprout,
+      category: 'Navigation',
+      action: () => navigate('/agriculture'),
+      keywords: ['agriculture', 'mekong', 'delta', 'farm']
+    },
+    {
+      id: 'nav-weather',
+      label: 'Thời Tiết',
+      description: 'Giám sát thời tiết và tác động nông nghiệp',
+      icon: Cloud,
+      category: 'Navigation',
+      action: () => navigate('/weather'),
+      keywords: ['weather', 'climate', 'forecast']
+    },
+    {
+      id: 'nav-transportation',
+      label: 'Vận Tải ĐBSCL',
+      description: 'Trung tâm vận tải Đồng bằng Sông Cửu Long',
+      icon: Ship,
+      category: 'Navigation',
+      action: () => navigate('/transportation'),
+      keywords: ['transport', 'shipping', 'logistics']
     },
 
     // Quick Actions

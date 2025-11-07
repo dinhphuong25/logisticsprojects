@@ -18,6 +18,9 @@ import {
   Sun,
   Shield,
   Radio,
+  Sprout,
+  Cloud,
+  Ship,
   Zap,
   Fuel,
 } from 'lucide-react'
@@ -142,6 +145,29 @@ const navItems = [
     gradient: 'from-blue-600 to-indigo-600',
     isSpecial: true,
     badge: 'NEW'
+  },
+  { 
+    to: '/agriculture', 
+    icon: Sprout, 
+    label: 'Nông Sản ĐBSCL',
+    category: 'agriculture',
+    gradient: 'from-green-600 to-emerald-600',
+    isSpecial: true,
+    badge: 'HOT'
+  },
+  { 
+    to: '/weather', 
+    icon: Cloud, 
+    label: 'Thời Tiết',
+    category: 'agriculture',
+    gradient: 'from-blue-500 to-cyan-500'
+  },
+  { 
+    to: '/transportation', 
+    icon: Ship, 
+    label: 'Vận Tải ĐBSCL',
+    category: 'agriculture',
+    gradient: 'from-indigo-500 to-blue-600'
   },
 ]
 
