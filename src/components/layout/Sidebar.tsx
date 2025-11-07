@@ -16,6 +16,7 @@ import {
   Settings,
   ShoppingBag,
   Sun,
+  Shield,
   Radio,
   Zap,
   Fuel,
@@ -132,6 +133,15 @@ const navItems = [
     label: 'Cài đặt',
     category: 'system',
     gradient: 'from-gray-500 to-slate-500'
+  },
+  { 
+    to: '/blockchain', 
+    icon: Shield, 
+    label: 'Blockchain',
+    category: 'system',
+    gradient: 'from-blue-600 to-indigo-600',
+    isSpecial: true,
+    badge: 'NEW'
   },
 ]
 

@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { QRScanner } from '@/components/ui/qr-scanner'
 import {
   Package,
   Plus,
@@ -22,6 +23,7 @@ import {
   Eye,
   Star,
   MapPin,
+  Scan,
 } from 'lucide-react'
 import { getAllProducts, type Product } from '@/lib/products-data'
 
@@ -44,6 +46,7 @@ export default function ProductsPageSimple() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [tempFilter, setTempFilter] = useState<string>('all')
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   const { data: products = [], isLoading, refetch } = useQuery<Product[]>({
     queryKey: ['products'],
@@ -82,6 +85,11 @@ export default function ProductsPageSimple() {
   }, [products])
 
   const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products])
+
+  const handleScanResult = (value: string) => {
+    setSearchTerm(value)
+    setIsScannerOpen(false)
+  }
 
   const getTempClassConfig = (tempClass: string) => {
     const configs = {
@@ -130,6 +138,14 @@ export default function ProductsPageSimple() {
 
   return (
     <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      {isScannerOpen && (
+        <QRScanner
+          onClose={() => setIsScannerOpen(false)}
+          onScan={handleScanResult}
+          title="Quét mã để tìm sản phẩm"
+        />
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
@@ -142,6 +158,17 @@ export default function ProductsPageSimple() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs md:text-sm hidden md:inline-flex"
+            onClick={() => setIsScannerOpen(true)}
+          >
+            <Scan className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Quét mã</span>
+            <span className="sm:hidden">Scan</span>
+          </Button>
+
           {/* View Mode Toggle */}
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
@@ -557,6 +584,15 @@ export default function ProductsPageSimple() {
           </CardContent>
         </Card>
       )}
+
+      {/* Floating Scanner Button */}
+      <button
+        type="button"
+        onClick={() => setIsScannerOpen(true)}
+        className="fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full bg-gradient-to-br from-emerald-600 to-teal-600 shadow-2xl shadow-emerald-500/40 flex items-center justify-center text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/40"
+      >
+        <Scan className="w-6 h-6" />
+      </button>
     </div>
   )
 }

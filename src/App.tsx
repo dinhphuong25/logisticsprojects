@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { useThemeStore } from './stores/themeStore'
 import { useAuthStore } from './stores/authStore'
 import AppLayout from './components/layout/AppLayout'
+import { AnimatedPage } from './components/layout/AnimatedPage'
 import LoginPage from './features/auth/LoginPage'
 import DashboardPage from './features/dashboard/DashboardPageSimple'
 import InventoryPage from './features/inventory/InventoryPageSimple'
@@ -26,13 +28,23 @@ import EditProductPage from './features/products/EditProductPage'
 import EnergyManagementPage from './features/energy/EnergyManagementPageSimple'
 import GeneratorPage from './features/energy/GeneratorPage'
 import RemoteControlPage from './features/remote-control/RemoteControlPage'
+import { BlockchainTracking } from './features/blockchain/BlockchainTracking'
+import { BlockchainProductRegistration } from './features/blockchain/BlockchainProductRegistration'
 
 function App() {
+  return (
+    <BrowserRouter>
+      <AppContainer />
+    </BrowserRouter>
+  )
+}
+
+function AppContainer() {
+  const location = useLocation()
   const { isDark } = useThemeStore()
   const { isAuthenticated } = useAuthStore()
 
   useEffect(() => {
-    // Apply theme on mount
     if (isDark) {
       document.documentElement.classList.add('dark')
     } else {
@@ -41,48 +53,218 @@ function App() {
   }, [isDark])
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/*"
-          element={
-            isAuthenticated ? (
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/inventory" element={<InventoryPage />} />
-                  <Route path="/inbound" element={<InboundOrdersPage />} />
-                  <Route path="/inbound/create" element={<CreateInboundOrderPage />} />
-                  <Route path="/inbound/:orderId" element={<InboundOrderDetailPage />} />
-                  <Route path="/outbound" element={<OutboundOrdersPage />} />
-                  <Route path="/outbound/create" element={<CreateOutboundOrderPage />} />
-                  <Route path="/outbound/:orderId" element={<OutboundOrderDetailPage />} />
-                  <Route path="/temperature" element={<TemperaturePage />} />
-                  <Route path="/alerts" element={<AlertsPage />} />
-                  <Route path="/reports" element={<ReportsPage />} />
-                  <Route path="/zones" element={<ZoneManagementPage />} />
-                  <Route path="/locations" element={<LocationManagementPage />} />
-                  <Route path="/products" element={<ProductManagementPage />} />
-                  <Route path="/products/create" element={<CreateProductPage />} />
-                  <Route path="/products/:productId" element={<ProductDetailPage />} />
-                  <Route path="/products/:productId/edit" element={<EditProductPage />} />
-                  <Route path="/energy" element={<EnergyManagementPage />} />
-                  <Route path="/generator" element={<GeneratorPage />} />
-                  <Route path="/remote-control" element={<RemoteControlPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </AppLayout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-      </Routes>
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/login"
+            element={
+              <AnimatedPage>
+                <LoginPage />
+              </AnimatedPage>
+            }
+          />
+
+          <Route
+            element={
+              isAuthenticated ? (
+                <AppLayout />
+              ) : (
+                <Navigate to="/login" replace state={{ from: location }} />
+              )
+            }
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard"
+              element={
+                <AnimatedPage>
+                  <DashboardPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/inventory"
+              element={
+                <AnimatedPage>
+                  <InventoryPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/inbound"
+              element={
+                <AnimatedPage>
+                  <InboundOrdersPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/inbound/create"
+              element={
+                <AnimatedPage>
+                  <CreateInboundOrderPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/inbound/:orderId"
+              element={
+                <AnimatedPage>
+                  <InboundOrderDetailPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/outbound"
+              element={
+                <AnimatedPage>
+                  <OutboundOrdersPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/outbound/create"
+              element={
+                <AnimatedPage>
+                  <CreateOutboundOrderPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/outbound/:orderId"
+              element={
+                <AnimatedPage>
+                  <OutboundOrderDetailPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/temperature"
+              element={
+                <AnimatedPage>
+                  <TemperaturePage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/alerts"
+              element={
+                <AnimatedPage>
+                  <AlertsPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <AnimatedPage>
+                  <ReportsPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/zones"
+              element={
+                <AnimatedPage>
+                  <ZoneManagementPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/locations"
+              element={
+                <AnimatedPage>
+                  <LocationManagementPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <AnimatedPage>
+                  <ProductManagementPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products/create"
+              element={
+                <AnimatedPage>
+                  <CreateProductPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products/:productId"
+              element={
+                <AnimatedPage>
+                  <ProductDetailPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products/:productId/edit"
+              element={
+                <AnimatedPage>
+                  <EditProductPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/energy"
+              element={
+                <AnimatedPage>
+                  <EnergyManagementPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/generator"
+              element={
+                <AnimatedPage>
+                  <GeneratorPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/remote-control"
+              element={
+                <AnimatedPage>
+                  <RemoteControlPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <AnimatedPage>
+                  <SettingsPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/blockchain"
+              element={
+                <AnimatedPage>
+                  <BlockchainTracking />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/blockchain/register"
+              element={
+                <AnimatedPage>
+                  <BlockchainProductRegistration />
+                </AnimatedPage>
+              }
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        </Routes>
+      </AnimatePresence>
       <Toaster position="top-right" richColors />
-    </BrowserRouter>
+    </>
   )
 }
 

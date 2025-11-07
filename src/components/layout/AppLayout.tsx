@@ -1,14 +1,10 @@
-import type { ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
+import { Outlet } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
 import { cn } from '@/lib/utils'
 
-interface AppLayoutProps {
-  children: ReactNode
-}
-
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
 
   return (
@@ -30,7 +26,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           sidebarCollapsed ? "ml-0 lg:ml-16" : "ml-0 lg:ml-56"
         )}>
           <div className="max-w-full mx-auto w-full flex-1">
-            {children}
+            <Outlet />
           </div>
           
           {/* Footer */}

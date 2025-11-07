@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { QRScanner } from '@/components/ui/qr-scanner'
 import {
   Search,
   Download,
@@ -15,6 +16,7 @@ import {
   MapPin,
   Calendar,
   Box,
+  Scan,
 } from 'lucide-react'
 
 interface InventoryItem {
@@ -116,12 +118,18 @@ export default function InventoryPageSimple() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const [tempFilter, setTempFilter] = useState<string>('ALL')
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   const { data: inventory = [], isLoading, refetch } = useQuery<InventoryItem[]>({
     queryKey: ['inventory'],
     queryFn: fetchInventory,
     refetchInterval: 60000,
   })
+
+  const handleScanResult = (value: string) => {
+    setSearchTerm(value)
+    setIsScannerOpen(false)
+  }
 
   // Filter inventory
   const filteredInventory = useMemo(() => {
@@ -242,6 +250,14 @@ export default function InventoryPageSimple() {
 
   return (
     <div className="space-y-6">
+      {isScannerOpen && (
+        <QRScanner
+          onClose={() => setIsScannerOpen(false)}
+          onScan={handleScanResult}
+          title="Quét mã để tìm sản phẩm"
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -253,6 +269,14 @@ export default function InventoryPageSimple() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            onClick={() => setIsScannerOpen(true)}
+            variant="outline"
+            className="hidden md:inline-flex"
+          >
+            <Scan className="w-4 h-4 mr-2" />
+            Quét mã
+          </Button>
           <Button onClick={() => refetch()} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             Làm mới
@@ -452,6 +476,15 @@ export default function InventoryPageSimple() {
           )}
         </CardContent>
       </Card>
+
+      {/* Floating Scanner Button */}
+      <button
+        type="button"
+        onClick={() => setIsScannerOpen(true)}
+        className="fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 shadow-2xl shadow-blue-500/40 flex items-center justify-center text-white focus:outline-none focus:ring-4 focus:ring-blue-500/40"
+      >
+        <Scan className="w-6 h-6" />
+      </button>
     </div>
   )
 }

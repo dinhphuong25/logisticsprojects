@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   MapPin,
   Grid3x3,
+  Shield,
 } from 'lucide-react'
 
 interface CommandItem {
@@ -173,7 +174,25 @@ export function CommandPalette() {
       icon: Settings,
       category: 'Navigation',
       action: () => navigate('/settings'),
-      keywords: ['settings', 'configuration', 'preferences']
+      keywords: ['settings', 'config']
+    },
+    {
+      id: 'nav-blockchain',
+      label: 'Blockchain Tracking',
+      description: 'Xác thực và theo dõi sản phẩm blockchain',
+      icon: Shield,
+      category: 'Navigation',
+      action: () => navigate('/blockchain'),
+      keywords: ['blockchain', 'tracking', 'verify']
+    },
+    {
+      id: 'nav-blockchain-register',
+      label: 'Đăng ký Blockchain',
+      description: 'Đăng ký sản phẩm mới trên blockchain',
+      icon: Package,
+      category: 'Navigation',
+      action: () => navigate('/blockchain/register'),
+      keywords: ['blockchain', 'register', 'new']
     },
 
     // Quick Actions
