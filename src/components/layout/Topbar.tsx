@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useWarehouseStore } from '@/stores/warehouseStore'
 import { useUIStore } from '@/stores/uiStore'
 import { Button } from '@/components/ui/button'
+import { CommandPalette } from '@/components/ui/command-palette'
 import { LogOut, Building2, Activity, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -77,6 +78,9 @@ export default function Topbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Command Palette */}
+          <CommandPalette />
+          
           {/* User Menu */}
           <div className="ml-2 sm:ml-4 group relative">
             <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/80 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer backdrop-blur-xl">
