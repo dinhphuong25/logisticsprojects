@@ -36,7 +36,6 @@ import { MekongDeltaAgricultureDashboard } from './features/agriculture/MekongDe
 import { MekongDeltaWeatherMonitoring } from './features/agriculture/MekongDeltaWeatherMonitoring'
 import { MekongDeltaTransportationHub } from './features/agriculture/MekongDeltaTransportationHub'
 import SmartAnalyticsDashboard from './features/dashboard/SmartAnalyticsDashboard'
-import { GlobalAIAssistant } from './components/GlobalAIAssistant'
 
 function App() {
   return (
@@ -318,7 +317,6 @@ function AppContainer() {
           </Route>
         </Routes>
       </AnimatePresence>
-      <GlobalAIAssistant />
       <Toaster position="top-right" richColors />
     </>
   )
