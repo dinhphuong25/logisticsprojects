@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useProductStore } from '@/stores/productStore'
 import { MEKONG_DELTA_CONFIG } from '@/lib/mekong-delta-config'
 import { 
-  Filter, X, RotateCcw, Settings, TrendingUp, Calendar, 
-  MapPin, Package, Thermometer, Shield, Star, Eye, EyeOff,
+  Filter, X, RotateCcw, TrendingUp, Calendar, 
+  MapPin, Package, Thermometer, Shield, Star, Eye,
   ChevronDown, ChevronUp, Sliders
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 

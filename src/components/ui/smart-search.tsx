@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { useDebounce } from '@/hooks/useDebounce'
 import { 
   Search, X, Clock, TrendingUp, Filter, Sparkles, 
-  MapPin, Calendar, Shield, Star, Package
+  MapPin, Shield, Star, Package
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
