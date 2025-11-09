@@ -1,637 +1,656 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-  ArrowLeft,
-  Save,
-  Package,
-  Thermometer,
-  Clock,
-  Weight,
-  Maximize,
-  DollarSign,
-  FileText,
-  MapPin,
-  Award,
-  Upload,
-  X,
-} from 'lucide-react'
+﻿import React, { useState } from 'react';
+import { useProductStore } from '../../stores/productStore';
+import { Package, Save, X, Sparkles, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-interface ProductFormData {
-  sku: string
-  name: string
-  nameVi: string
-  description: string
-  category: string
-  subcategory: string
-  unit: string
-  tempClass: 'FROZEN' | 'CHILL' | 'DRY'
-  tempRange: string
-  shelfLifeDays: number
-  weight: number
-  cubic: number
-  price: number
-  supplier: string
-  origin: string
-  certifications: string[]
-  stockLevel: number
-  reorderPoint: number
-  image: string
-}
+// Sample data generator for ĐBSCL agricultural products
+const generateSampleProducts = () => {
+  const products = [
+    {
+      nameVi: 'Gạo Jasmine Hương Lài Cao Cấp',
+      name: 'Premium Jasmine Fragrant Rice',
+      sku: 'RICE-001',
+      category: 'Ngũ cốc ĐBSCL',
+      price: 45000,
+      unit: 'kg',
+      stockLevel: 5000,
+      description: 'Gạo thơm cao cấp, hạt dài, mềm dẻo, hương thơm tự nhiên. Trồng tại đồng bằng sông Cửu Long với quy trình canh tác hữu cơ.',
+      origin: 'An Giang',
+      farmName: 'HTX Nông nghiệp Thạnh Phú',
+      farmerName: 'Nguyễn Văn Minh',
+      farmProvince: 'An Giang',
+      farmArea: 25.5,
+      certifications: ['VietGAP', 'Organic', 'GlobalGAP']
+    },
+    {
+      nameVi: 'Thanh Long Ruột Đỏ Organic',
+      name: 'Organic Red Dragon Fruit',
+      sku: 'FRUIT-001',
+      category: 'Trái cây ĐBSCL',
+      price: 35000,
+      unit: 'kg',
+      stockLevel: 3200,
+      description: 'Thanh long ruột đỏ organic, không hóa chất, ngọt tự nhiên 13-15 brix. Thu hoạch đúng độ chín, đóng gói theo tiêu chuẩn xuất khẩu.',
+      origin: 'Tiền Giang',
+      farmName: 'Vườn Thanh Long Bình Phước',
+      farmerName: 'Trần Thị Lan',
+      farmProvince: 'Tiền Giang',
+      farmArea: 15.0,
+      certifications: ['VietGAP', 'Organic', 'Fair Trade']
+    },
+    {
+      nameVi: 'Tôm Sú Organic Đặc Sản',
+      name: 'Premium Organic Black Tiger Shrimp',
+      sku: 'SEAFOOD-001',
+      category: 'Thủy sản ĐBSCL',
+      price: 380000,
+      unit: 'kg',
+      stockLevel: 1500,
+      description: 'Tôm sú nuôi sinh thái organic, size 20-30 con/kg. Không kháng sinh, không hóa chất. Nuôi trong môi trường nước mặn tự nhiên.',
+      origin: 'Cà Mau',
+      farmName: 'Trại Tôm Sinh Thái Nam Cần',
+      farmerName: 'Lê Văn Hải',
+      farmProvince: 'Cà Mau',
+      farmArea: 30.0,
+      certifications: ['ASC', 'BAP', 'Organic', 'GlobalGAP']
+    },
+    {
+      nameVi: 'Dừa Xiêm Xanh Tươi Bến Tre',
+      name: 'Fresh Ben Tre Green Coconut',
+      sku: 'FRUIT-002',
+      category: 'Trái cây ĐBSCL',
+      price: 15000,
+      unit: 'trái',
+      stockLevel: 8000,
+      description: 'Dừa xiêm xanh nguyên trái, nước ngọt mát, cùi dày. Đặc sản nổi tiếng của Bến Tre, được trồng theo phương pháp truyền thống.',
+      origin: 'Bến Tre',
+      farmName: 'Vườn Dừa Miệt Vườn',
+      farmerName: 'Võ Văn Thành',
+      farmProvince: 'Bến Tre',
+      farmArea: 18.0,
+      certifications: ['VietGAP', '3_Sao']
+    },
+    {
+      nameVi: 'Xoài Cát Hòa Lộc Cao Cấp',
+      name: 'Premium Hoa Loc Cat Mango',
+      sku: 'FRUIT-003',
+      category: 'Trái cây ĐBSCL',
+      price: 65000,
+      unit: 'kg',
+      stockLevel: 2800,
+      description: 'Xoài cát Hòa Lộc đặc sản Tiền Giang, thịt vàng óng, thơm ngọt đậm đà. Size xuất khẩu 350-450g/trái.',
+      origin: 'Tiền Giang',
+      farmName: 'Vườn Xoài Hòa Lộc Thạnh Tân',
+      farmerName: 'Nguyễn Thanh Sơn',
+      farmProvince: 'Tiền Giang',
+      farmArea: 12.5,
+      certifications: ['VietGAP', 'GlobalGAP']
+    },
+    {
+      nameVi: 'Cá Tra Fillet Đông Lạnh',
+      name: 'Frozen Pangasius Fillet',
+      sku: 'SEAFOOD-002',
+      category: 'Thủy sản ĐBSCL',
+      price: 85000,
+      unit: 'kg',
+      stockLevel: 4500,
+      description: 'Cá tra phi lê đông lạnh, không xương, không da. Nuôi trong ao bùn tự nhiên, thịt cá ngọt, không tanh.',
+      origin: 'Đồng Tháp',
+      farmName: 'Trại Cá Tra Hồng Ngự',
+      farmerName: 'Trần Minh Khoa',
+      farmProvince: 'Đồng Tháp',
+      farmArea: 45.0,
+      certifications: ['ASC', 'BAP', 'HACCP']
+    },
+    {
+      nameVi: 'Gạo ST25 Đặc Sản Sóc Trăng',
+      name: 'ST25 Specialty Rice Soc Trang',
+      sku: 'RICE-002',
+      category: 'Ngũ cốc ĐBSCL',
+      price: 75000,
+      unit: 'kg',
+      stockLevel: 3500,
+      description: 'Gạo ST25 đạt giải nhất gạo ngon nhất thế giới. Hạt dài, trắng trong, hương thơm đặc trưng, nấu cơm dẻo và ngon.',
+      origin: 'Sóc Trăng',
+      farmName: 'HTX Lúa Gạo Sóc Trăng',
+      farmerName: 'Hồ Quang Cua',
+      farmProvince: 'Sóc Trăng',
+      farmArea: 35.0,
+      certifications: ['VietGAP', 'GlobalGAP', 'Organic']
+    },
+    {
+      nameVi: 'Bưởi Da Xanh Vĩnh Long',
+      name: 'Vinh Long Green Skin Pomelo',
+      sku: 'FRUIT-004',
+      category: 'Trái cây ĐBSCL',
+      price: 28000,
+      unit: 'kg',
+      stockLevel: 4200,
+      description: 'Bưởi da xanh đặc sản Vĩnh Long, múi hồng, ngọt thanh, ít hạt. Trọng lượng trung bình 1.2-1.5kg/trái.',
+      origin: 'Vĩnh Long',
+      farmName: 'Vườn Bưởi Tam Bình',
+      farmerName: 'Lê Thị Mai',
+      farmProvince: 'Vĩnh Long',
+      farmArea: 8.5,
+      certifications: ['VietGAP', '3_Sao']
+    },
+    {
+      nameVi: 'Mật Ong Hoa Nhãn Nguyên Chất',
+      name: 'Pure Longan Blossom Honey',
+      sku: 'FOOD-001',
+      category: 'Thực phẩm chế biến ĐBSCL',
+      price: 180000,
+      unit: 'kg',
+      stockLevel: 800,
+      description: 'Mật ong hoa nhãn nguyên chất 100%, không pha trộn. Hương thơm đặc trưng của hoa nhãn, màu vàng óng.',
+      origin: 'Cần Thơ',
+      farmName: 'Trại Ong Mật Cồn Khương',
+      farmerName: 'Phan Văn Tùng',
+      farmProvince: 'Cần Thơ',
+      farmArea: 5.0,
+      certifications: ['HACCP', 'Organic']
+    },
+    {
+      nameVi: 'Sầu Riêng Ri6 Cái Mơn',
+      name: 'Ri6 Durian Cai Mon',
+      sku: 'FRUIT-005',
+      category: 'Trái cây ĐBSCL',
+      price: 120000,
+      unit: 'kg',
+      stockLevel: 1200,
+      description: 'Sầu riêng Ri6 đặc sản Cái Mơn, múi dày, vàng óng, béo ngậy, vị ngọt đậm. Trọng lượng 2-3kg/trái.',
+      origin: 'Cần Thơ',
+      farmName: 'Vườn Sầu Riêng Cái Mơn',
+      farmerName: 'Nguyễn Văn Dũng',
+      farmProvince: 'Cần Thơ',
+      farmArea: 6.5,
+      certifications: ['VietGAP']
+    },
+    {
+      nameVi: 'Cá Lóc Đồng Tươi Sống',
+      name: 'Fresh Live Snakehead Fish',
+      sku: 'SEAFOOD-003',
+      category: 'Thủy sản ĐBSCL',
+      price: 95000,
+      unit: 'kg',
+      stockLevel: 2200,
+      description: 'Cá lóc đồng tươi sống, nuôi trong ruộng lúa và ao tự nhiên. Thịt cá ngọt, giàu protein, ít mỡ.',
+      origin: 'An Giang',
+      farmName: 'Ao Cá Đồng Tháp Mười',
+      farmerName: 'Võ Minh Tuấn',
+      farmProvince: 'An Giang',
+      farmArea: 22.0,
+      certifications: ['VietGAP', 'ASC']
+    },
+    {
+      nameVi: 'Măng Cụt Tươi Cà Mau',
+      name: 'Fresh Ca Mau Mangosteen',
+      sku: 'FRUIT-006',
+      category: 'Trái cây ĐBSCL',
+      price: 42000,
+      unit: 'kg',
+      stockLevel: 2800,
+      description: 'Măng cụt tươi Cà Mau, vỏ tím đen, múi trắng ngọt thanh. Size đều 5-7 múi/trái.',
+      origin: 'Cà Mau',
+      farmName: 'Vườn Trái Cây U Minh',
+      farmerName: 'Huỳnh Thị Nga',
+      farmProvince: 'Cà Mau',
+      farmArea: 10.0,
+      certifications: ['VietGAP']
+    }
+  ];
 
-const createProduct = async (data: ProductFormData) => {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  return { success: true, productId: `prod-${Date.now()}`, data }
-}
+  return products.map((p, index) => ({
+    id: `AGR-${Date.now() + index}`,
+    name: p.name,
+    nameVi: p.nameVi,
+    sku: p.sku,
+    category: p.category,
+    price: p.price,
+    unit: p.unit,
+    stockLevel: p.stockLevel,
+    reorderPoint: Math.floor(p.stockLevel * 0.2),
+    tempClass: (p.category === 'Thủy sản ĐBSCL' ? 'FROZEN' : 
+               p.category === 'Trái cây ĐBSCL' ? 'CHILL' : 'AMBIENT') as 'FROZEN' | 'CHILL' | 'AMBIENT' | 'DRY',
+    tempRange: p.category === 'Thủy sản ĐBSCL' ? '-18°C' : 
+               p.category === 'Trái cây ĐBSCL' ? '0-8°C' : '18-25°C',
+    shelfLifeDays: p.category === 'Thủy sản ĐBSCL' ? 180 : 
+                   p.category === 'Trái cây ĐBSCL' ? 7 : 365,
+    description: p.description,
+    image: `https://images.unsplash.com/photo-${1574323347407 + index}?w=500`,
+    imageUrl: `https://images.unsplash.com/photo-${1574323347407 + index}?w=500`,
+    origin: p.origin,
+    isPopular: index < 4,
+    certifications: p.certifications,
+    weight: 1,
+    cubic: 0.001,
+    lastRestocked: new Date().toISOString().split('T')[0],
+    
+    farm: {
+      name: p.farmName,
+      province: p.farmProvince,
+      farmer: p.farmerName,
+      certifications: p.certifications,
+      coordinates: { lat: 10.0000 + (index * 0.1), lng: 106.0000 + (index * 0.1) },
+      area: p.farmArea,
+      establishedYear: 2015 + Math.floor(index / 2)
+    },
+    
+    harvest: {
+      season: index % 3 === 0 ? 'Vụ Đông Xuân' : index % 3 === 1 ? 'Vụ Hè Thu' : 'Vụ Mùa',
+      date: new Date(Date.now() - (index * 86400000)).toISOString().split('T')[0],
+      quantity: p.stockLevel,
+      method: (index % 2 === 0 ? 'manual' : 'machine') as 'manual' | 'machine',
+      weather: 'Thuận lợi',
+      quality_score: 85 + Math.floor(Math.random() * 15)
+    },
+    
+    blockchain: {
+      verified: true,
+      traceabilityCode: `${p.sku}-2025-${String(index).padStart(3, '0')}`,
+      transactionHash: '0x' + Math.random().toString(16).substr(2, 40),
+      verificationDate: new Date().toISOString().split('T')[0],
+      certificates: p.certifications
+    },
+    
+    qualityGrade: (index % 5 === 0 ? 'A+' : index % 4 === 0 ? 'A' : 'B') as 'A+' | 'A' | 'B' | 'C',
+    marketDemand: (index < 5 ? 'high' : index < 9 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
+    supplierScore: 8.0 + (Math.random() * 2),
+    sustainabilityRating: 8.0 + (Math.random() * 2)
+  }));
+};
 
-export default function CreateProductPage() {
-  const navigate = useNavigate()
-  const [certInput, setCertInput] = useState('')
-  
-  const [formData, setFormData] = useState<ProductFormData>({
-    sku: '',
+export const CreateProductPage = () => {
+  const { addProduct, products } = useProductStore();
+  const [formData, setFormData] = useState({
     name: '',
     nameVi: '',
-    description: '',
-    category: '',
-    subcategory: '',
-    unit: 'KG',
-    tempClass: 'FROZEN',
-    tempRange: '-18°C đến -22°C',
-    shelfLifeDays: 365,
-    weight: 0,
-    cubic: 0,
+    sku: '',
+    category: 'Ngũ cốc ĐBSCL',
     price: 0,
-    supplier: '',
-    origin: '',
-    certifications: [],
+    unit: 'kg',
     stockLevel: 0,
-    reorderPoint: 100,
-    image: '',
-  })
+    description: '',
+    origin: ''
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedCount, setGeneratedCount] = useState(0);
 
-  const createMutation = useMutation({
-    mutationFn: createProduct,
-    onSuccess: () => {
-      toast.success('Tạo sản phẩm thành công!', {
-        description: `${formData.nameVi} đã được thêm vào hệ thống`,
-      })
-      setTimeout(() => navigate('/products'), 1000)
-    },
-    onError: () => {
-      toast.error('Không thể tạo sản phẩm', {
-        description: 'Vui lòng thử lại sau',
-      })
-    },
-  })
-
-  const handleChange = (field: keyof ProductFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleAddCertification = () => {
-    if (certInput.trim() && !formData.certifications.includes(certInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        certifications: [...prev.certifications, certInput.trim()],
-      }))
-      setCertInput('')
-    }
-  }
-
-  const handleRemoveCertification = (cert: string) => {
-    setFormData(prev => ({
-      ...prev,
-      certifications: prev.certifications.filter(c => c !== cert),
-    }))
-  }
+  const handleGenerateSampleData = () => {
+    setIsGenerating(true);
+    const sampleProducts = generateSampleProducts();
+    
+    let count = 0;
+    const interval = setInterval(() => {
+      if (count < sampleProducts.length) {
+        addProduct(sampleProducts[count]);
+        count++;
+        setGeneratedCount(count);
+      } else {
+        clearInterval(interval);
+        setIsGenerating(false);
+        setTimeout(() => {
+          alert(`✅ Đã tạo thành công ${sampleProducts.length} sản phẩm ĐBSCL!\n\n` +
+                `📦 Tổng sản phẩm trong hệ thống: ${products.length + sampleProducts.length}\n` +
+                `🌾 Hãy kiểm tra trang Danh sách sản phẩm để xem.`);
+        }, 500);
+      }
+    }, 200);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    // Validation
-    if (!formData.sku || !formData.nameVi || !formData.category) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc')
-      return
-    }
+    const newProduct = {
+      id: `AGR-${Date.now().toString().slice(-6)}`,
+      ...formData,
+      tempClass: 'AMBIENT' as const,
+      tempRange: '18-25°C',
+      shelfLifeDays: 30,
+      image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500',
+      imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500',
+      isPopular: false,
+      certifications: [],
+      weight: 1,
+      cubic: 0.001,
+      reorderPoint: 50,
+      lastRestocked: new Date().toISOString().split('T')[0],
+      
+      farm: {
+        name: 'Nông trại mẫu',
+        province: formData.origin,
+        farmer: 'Nông dân',
+        certifications: [],
+        coordinates: { lat: 10.0000, lng: 106.0000 },
+        area: 10,
+        establishedYear: 2020
+      },
+      
+      harvest: {
+        season: 'Vụ Đông Xuân',
+        date: new Date().toISOString().split('T')[0],
+        quantity: formData.stockLevel,
+        method: 'manual' as const,
+        weather: 'Thuận lợi',
+        quality_score: 90
+      },
+      
+      blockchain: {
+        verified: true,
+        traceabilityCode: `${formData.sku}-2025`,
+        transactionHash: '0x' + Math.random().toString(16).substr(2, 40),
+        verificationDate: new Date().toISOString().split('T')[0],
+        certificates: []
+      },
+      
+      qualityGrade: 'A' as const,
+      marketDemand: 'medium' as const,
+      supplierScore: 9.0,
+      sustainabilityRating: 8.5
+    };
+    
+    addProduct(newProduct);
+    alert('Sản phẩm đã được tạo thành công!');
+    
+    // Reset form
+    setFormData({
+      name: '',
+      nameVi: '',
+      sku: '',
+      category: 'Ngũ cốc ĐBSCL',
+      price: 0,
+      unit: 'kg',
+      stockLevel: 0,
+      description: '',
+      origin: ''
+    });
+  };
 
-    if (formData.price <= 0 || formData.weight <= 0) {
-      toast.error('Giá và trọng lượng phải lớn hơn 0')
-      return
-    }
-
-    createMutation.mutate(formData)
-  }
-
-  const categories = [
-    { value: 'Hải sản', subcategories: ['Cá tươi', 'Tôm', 'Mực', 'Hàu sò'] },
-    { value: 'Thịt', subcategories: ['Thịt bò', 'Thịt heo', 'Thịt gà', 'Thịt cừu'] },
-    { value: 'Sữa & Phô mai', subcategories: ['Sữa tươi', 'Phô mai', 'Bơ', 'Sữa chua'] },
-    { value: 'Rau củ', subcategories: ['Rau tươi', 'Rau đông lạnh', 'Củ quả'] },
-    { value: 'Trái cây', subcategories: ['Trái cây tươi', 'Trái cây đông lạnh'] },
-  ]
-
-  const suppliers = [
-    'Fresh Seafood Co.',
-    'Global Meat Import',
-    'Premium Dairy Corp.',
-    'Asia Vegetables Ltd.',
-    'Tropical Fruits Co.',
-    'Ocean Fresh Import',
-  ]
-
-  const tempRanges = {
-    FROZEN: ['-18°C đến -22°C', '-20°C đến -25°C', '-18°C'],
-    CHILL: ['0°C đến 4°C', '2°C đến 6°C', '4°C đến 8°C'],
-    DRY: ['15°C đến 25°C', 'Nhiệt độ phòng'],
-  }
-
-  const sampleImages = [
-    'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&q=80',
-    'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&q=80',
-    'https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=400&q=80',
-    'https://images.unsplash.com/photo-1602470520998-f4a52199a3d6?w=400&q=80',
-    'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&q=80',
-    'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=400&q=80',
-    'https://images.unsplash.com/photo-1582515073490-39981397c445?w=400&q=80',
-    'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400&q=80',
-  ]
-
-  const getTempIcon = (temp: string) => {
-    const icons = { FROZEN: '🧊', CHILL: '❄️', DRY: '📦' }
-    return icons[temp as keyof typeof icons]
-  }
+  const handleChange = (field: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/products')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Quay lại
-          </Button>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-              Thêm sản phẩm mới
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Nhập thông tin chi tiết về sản phẩm
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Main Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-emerald-600" />
-                  Thông tin cơ bản
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Mã SKU <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      placeholder="VD: FISH-SAL-001"
-                      value={formData.sku}
-                      onChange={(e) => handleChange('sku', e.target.value.toUpperCase())}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Tên tiếng Việt <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      placeholder="VD: Cá hồi Na Uy phi lê"
-                      value={formData.nameVi}
-                      onChange={(e) => handleChange('nameVi', e.target.value)}
-                      required
-                    />
-                  </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header with Quick Actions */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-green-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 flex items-center">
+                <Package className="mr-4 text-green-600" size={40} />
+                Quản Lý Sản Phẩm ĐBSCL
+              </h1>
+              <p className="text-gray-600 mt-3 text-lg">Thêm sản phẩm nông nghiệp từ Đồng bằng Sông Cửu Long</p>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="px-4 py-2 bg-blue-50 rounded-lg">
+                  <span className="text-sm text-blue-700 font-medium">
+                    📦 Tổng sản phẩm: <span className="font-bold text-xl">{products.length}</span>
+                  </span>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Tên tiếng Anh
-                  </label>
-                  <Input
-                    placeholder="VD: Norwegian Salmon Fillet"
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Mô tả sản phẩm
-                  </label>
-                  <textarea
-                    className="w-full min-h-[100px] px-3 py-2 border rounded-lg bg-white dark:bg-gray-800"
-                    placeholder="Mô tả chi tiết về sản phẩm..."
-                    value={formData.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Danh mục <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                      value={formData.category}
-                      onChange={(e) => {
-                        handleChange('category', e.target.value)
-                        handleChange('subcategory', '')
-                      }}
-                      required
-                    >
-                      <option value="">Chọn danh mục</option>
-                      {categories.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                          {cat.value}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Danh mục con
-                    </label>
-                    <select
-                      className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                      value={formData.subcategory}
-                      onChange={(e) => handleChange('subcategory', e.target.value)}
-                      disabled={!formData.category}
-                    >
-                      <option value="">Chọn danh mục con</option>
-                      {categories
-                        .find((c) => c.value === formData.category)
-                        ?.subcategories.map((sub) => (
-                          <option key={sub} value={sub}>
-                            {sub}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Temperature & Storage */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <Thermometer className="w-5 h-5 text-blue-600" />
-                  Nhiệt độ & Bảo quản
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Loại nhiệt độ <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(['FROZEN', 'CHILL', 'DRY'] as const).map((temp) => (
-                        <button
-                          key={temp}
-                          type="button"
-                          onClick={() => {
-                            handleChange('tempClass', temp)
-                            handleChange('tempRange', tempRanges[temp][0])
-                          }}
-                          className={`p-3 border-2 rounded-lg transition-all ${
-                            formData.tempClass === temp
-                              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="text-2xl mb-1">{getTempIcon(temp)}</div>
-                          <div className="text-xs font-medium">
-                            {temp === 'FROZEN' ? 'Đông lạnh' : temp === 'CHILL' ? 'Mát' : 'Khô'}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Khoảng nhiệt độ
-                    </label>
-                    <select
-                      className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                      value={formData.tempRange}
-                      onChange={(e) => handleChange('tempRange', e.target.value)}
-                    >
-                      {tempRanges[formData.tempClass].map((range) => (
-                        <option key={range} value={range}>
-                          {range}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      <Clock className="w-4 h-4 inline mr-1" />
-                      Hạn sử dụng (ngày)
-                    </label>
-                    <Input
-                      type="number"
-                      value={formData.shelfLifeDays}
-                      onChange={(e) => handleChange('shelfLifeDays', parseInt(e.target.value))}
-                      min="1"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Physical Properties */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <Weight className="w-5 h-5 text-purple-600" />
-                  Thông số vật lý
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Đơn vị tính
-                    </label>
-                    <select
-                      className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                      value={formData.unit}
-                      onChange={(e) => handleChange('unit', e.target.value)}
-                    >
-                      <option value="KG">KG</option>
-                      <option value="Lít">Lít</option>
-                      <option value="Thùng">Thùng</option>
-                      <option value="Cái">Cái</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Trọng lượng (kg)
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.weight}
-                      onChange={(e) => handleChange('weight', parseFloat(e.target.value))}
-                      min="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      <Maximize className="w-4 h-4 inline mr-1" />
-                      Thể tích (m³)
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.001"
-                      value={formData.cubic}
-                      onChange={(e) => handleChange('cubic', parseFloat(e.target.value))}
-                      min="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      <DollarSign className="w-4 h-4 inline mr-1" />
-                      Giá (VNĐ)
-                    </label>
-                    <Input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => handleChange('price', parseInt(e.target.value))}
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Supplier & Origin */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-amber-600" />
-                  Nhà cung cấp & Xuất xứ
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Nhà cung cấp
-                    </label>
-                    <select
-                      className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                      value={formData.supplier}
-                      onChange={(e) => handleChange('supplier', e.target.value)}
-                    >
-                      <option value="">Chọn nhà cung cấp</option>
-                      {suppliers.map((sup) => (
-                        <option key={sup} value={sup}>
-                          {sup}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Xuất xứ
-                    </label>
-                    <Input
-                      placeholder="VD: Na Uy, Úc, Việt Nam..."
-                      value={formData.origin}
-                      onChange={(e) => handleChange('origin', e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium mb-2">
-                    <Award className="w-4 h-4 inline mr-1" />
-                    Chứng nhận
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Thêm chứng nhận (VD: HACCP, ISO 22000...)"
-                      value={certInput}
-                      onChange={(e) => setCertInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCertification())}
-                    />
-                    <Button type="button" onClick={handleAddCertification}>
-                      Thêm
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.certifications.map((cert) => (
-                      <Badge
-                        key={cert}
-                        variant="outline"
-                        className="px-3 py-1 flex items-center gap-2"
-                      >
-                        {cert}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCertification(cert)}
-                          className="hover:text-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Image & Stock */}
-          <div className="space-y-6">
-            {/* Image Upload */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-pink-600" />
-                  Hình ảnh sản phẩm
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    URL hình ảnh
-                  </label>
-                  <Input
-                    placeholder="https://..."
-                    value={formData.image}
-                    onChange={(e) => handleChange('image', e.target.value)}
-                  />
-                </div>
-
-                {formData.image && (
-                  <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                    <img
-                      src={formData.image}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/400?text=No+Image'
-                      }}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Hoặc chọn ảnh mẫu:</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {sampleImages.map((img, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleChange('image', img)}
-                        className="aspect-square rounded border-2 overflow-hidden hover:border-emerald-500 transition-colors"
-                      >
-                        <img src={img} alt={`Sample ${idx + 1}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Stock Info */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="border-b bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-green-600" />
-                  Thông tin tồn kho
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Số lượng ban đầu
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.stockLevel}
-                    onChange={(e) => handleChange('stockLevel', parseInt(e.target.value))}
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Điểm đặt hàng lại
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.reorderPoint}
-                    onChange={(e) => handleChange('reorderPoint', parseInt(e.target.value))}
-                    min="0"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Hệ thống sẽ cảnh báo khi tồn kho thấp hơn giá trị này
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3">
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12"
+              </div>
+            </div>
+            
+            {/* Quick Generate Button */}
+            <div className="text-center">
+              <button
+                onClick={handleGenerateSampleData}
+                disabled={isGenerating}
+                className="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                {createMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang tạo...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Tạo sản phẩm
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/products')}
-                className="w-full"
-              >
-                Hủy bỏ
-              </Button>
+                <div className="flex items-center gap-3">
+                  {isGenerating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <div>
+                        <div className="font-bold text-lg">Đang tạo...</div>
+                        <div className="text-sm opacity-90">{generatedCount} sản phẩm</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="animate-pulse" size={24} />
+                      <div>
+                        <div className="font-bold text-lg">Tạo Dữ Liệu Mẫu</div>
+                        <div className="text-sm opacity-90">12 sản phẩm ĐBSCL</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </button>
+              <p className="text-xs text-gray-500 mt-2">Tự động tạo sản phẩm đặc sản</p>
             </div>
           </div>
         </div>
-      </form>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Manual Form */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-green-100">
+              <Plus className="text-green-600" size={28} />
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Tạo Thủ Công</h2>
+                <p className="text-sm text-gray-600">Nhập thông tin sản phẩm chi tiết</p>
+              </div>
+            </div>
+
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tên sản phẩm (Tiếng Việt) *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.nameVi}
+                onChange={(e) => handleChange('nameVi', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="VD: Gạo ST25 Cao Cấp"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tên sản phẩm (English) *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="VD: ST25 Premium Rice"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mã SKU *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.sku}
+                onChange={(e) => handleChange('sku', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="VD: RICE-001"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Danh mục *
+              </label>
+              <select
+                required
+                value={formData.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Ngũ cốc ĐBSCL">Ngũ cốc ĐBSCL</option>
+                <option value="Trái cây ĐBSCL">Trái cây ĐBSCL</option>
+                <option value="Thủy sản ĐBSCL">Thủy sản ĐBSCL</option>
+                <option value="Thực phẩm chế biến ĐBSCL">Thực phẩm chế biến ĐBSCL</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Giá (VNĐ) *
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.price}
+                onChange={(e) => handleChange('price', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="50000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Đơn vị *
+              </label>
+              <select
+                required
+                value={formData.unit}
+                onChange={(e) => handleChange('unit', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="kg">Kilogram (kg)</option>
+                <option value="gram">Gram (g)</option>
+                <option value="trái">Trái</option>
+                <option value="túi">Túi</option>
+                <option value="thùng">Thùng</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tồn kho *
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.stockLevel}
+                onChange={(e) => handleChange('stockLevel', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="1000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Xuất xứ *
+              </label>
+              <select
+                required
+                value={formData.origin}
+                onChange={(e) => handleChange('origin', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Chọn tỉnh thành</option>
+                <option value="An Giang">An Giang</option>
+                <option value="Cần Thơ">Cần Thơ</option>
+                <option value="Đồng Tháp">Đồng Tháp</option>
+                <option value="Kiên Giang">Kiên Giang</option>
+                <option value="Long An">Long An</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Mô tả sản phẩm
+            </label>
+            <textarea
+              rows={3}
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Mô tả chi tiết về sản phẩm..."
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              type="button"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center"
+            >
+              <X className="mr-2" size={18} />
+              Hủy bỏ
+            </button>
+            
+            <button
+              type="submit"
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            >
+              <Save className="mr-2" size={18} />
+              Tạo sản phẩm
+            </button>
+          </div>
+          </form>
+        </div>
+
+        {/* Sample Data Preview */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-blue-100">
+            <Sparkles className="text-blue-600" size={28} />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Dữ Liệu Mẫu Có Sẵn</h2>
+              <p className="text-sm text-gray-600">12 sản phẩm đặc sản ĐBSCL</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 max-h-[600px] overflow-y-auto pr-2">
+            {[
+              { icon: '🌾', name: 'Gạo Jasmine Hương Lài', origin: 'An Giang' },
+              { icon: '🐉', name: 'Thanh Long Ruột Đỏ Organic', origin: 'Tiền Giang' },
+              { icon: '🦐', name: 'Tôm Sú Organic Đặc Sản', origin: 'Cà Mau' },
+              { icon: '🥥', name: 'Dừa Xiêm Xanh Tươi', origin: 'Bến Tre' },
+              { icon: '🥭', name: 'Xoài Cát Hòa Lộc', origin: 'Tiền Giang' },
+              { icon: '🐟', name: 'Cá Tra Fillet Đông Lạnh', origin: 'Đồng Tháp' },
+              { icon: '🌾', name: 'Gạo ST25 Đặc Sản', origin: 'Sóc Trăng' },
+              { icon: '🍊', name: 'Bưởi Da Xanh', origin: 'Vĩnh Long' },
+              { icon: '🍯', name: 'Mật Ong Hoa Nhãn', origin: 'Cần Thơ' },
+              { icon: '🌰', name: 'Sầu Riêng Ri6 Cái Mơn', origin: 'Cần Thơ' },
+              { icon: '🐟', name: 'Cá Lóc Đồng Tươi Sống', origin: 'An Giang' },
+              { icon: '🍇', name: 'Măng Cụt Tươi', origin: 'Cà Mau' }
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-green-50 rounded-lg hover:shadow-md transition-shadow border border-gray-100"
+              >
+                <div className="text-3xl">{item.icon}</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900">{item.name}</div>
+                  <div className="text-sm text-gray-600">📍 {item.origin}</div>
+                </div>
+                <CheckCircle2 className="text-green-600" size={20} />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border-2 border-blue-200">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-blue-600 flex-shrink-0 mt-1" size={24} />
+              <div>
+                <div className="font-semibold text-blue-900 mb-1">Thông tin dữ liệu mẫu</div>
+                <div className="text-sm text-blue-800 space-y-1">
+                  <div>✅ Bao gồm đầy đủ thông tin nông trại, blockchain, chứng nhận</div>
+                  <div>✅ Dữ liệu thực tế về sản phẩm ĐBSCL</div>
+                  <div>✅ Tự động phân loại nhiệt độ bảo quản</div>
+                  <div>✅ Tích hợp hệ thống truy xuất nguồn gốc</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};

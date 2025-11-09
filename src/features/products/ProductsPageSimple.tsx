@@ -1,18 +1,20 @@
-import { useMemo, useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { QRScanner } from '@/components/ui/qr-scanner'
+import { motion } from 'framer-motion'
+import { getCurrentSeason } from '@/lib/mekong-delta-config'
+import { blockchainService } from '@/lib/blockchain'
 import {
   Package,
   Plus,
   Edit,
   Search,
   Clock,
-  Box,
   Grid3x3,
   List,
   Filter,
@@ -24,13 +26,279 @@ import {
   Star,
   MapPin,
   Scan,
+  Waves,
+  Sprout,
+
+  Calendar,
+  Shield,
+  TrendingUp,
+  CheckCircle
 } from 'lucide-react'
 import { getAllProducts, type Product } from '@/lib/products-data'
 
-// Fetch products from shared catalog
-const fetchProducts = async (): Promise<Product[]> => {
+// Enhanced product interface for ĐBSCL agricultural products
+interface LocalEnhancedProduct extends Product {
+  // Agricultural specific fields
+  farm?: {
+    name: string
+    province: string
+    farmer: string
+    certifications: string[]
+  }
+  harvest?: {
+    season: string
+    date: string
+    quantity: number
+  }
+  blockchain?: {
+    verified: boolean
+    traceabilityCode: string
+    transactionHash?: string
+  }
+  transportation?: {
+    method: string
+    route: string[]
+    sustainability: number
+  }
+  qualityGrade?: 'A+' | 'A' | 'B' | 'C'
+  marketDemand?: 'high' | 'medium' | 'low'
+}
+
+// Mock enhanced agricultural products data
+const getMekongDeltaProducts = (): LocalEnhancedProduct[] => {
+  const baseProducts = getAllProducts()
+  
+  const agriculturalProducts: LocalEnhancedProduct[] = [
+    {
+      id: 'AGR-001',
+      name: 'Premium ST25 Rice',
+      nameVi: 'Gạo ST25 Cao Cấp',
+      sku: 'ST25-001',
+      category: 'Ngũ cốc ĐBSCL',
+      price: 28500,
+      unit: 'kg',
+      stockLevel: 50000,
+      reorderPoint: 10000,
+      tempClass: 'DRY',
+      tempRange: '25-30°C',
+      shelfLifeDays: 365,
+      description: 'Gạo ST25 thơm ngon, chất lượng cao từ Sóc Trăng',
+      image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=500',
+      origin: 'Sóc Trăng',
+      isPopular: true,
+      certifications: ['VietGAP', '3_Sao', 'Organic'],
+      weight: 25,
+      cubic: 0.025,
+      subcategory: 'Gạo thơm',
+      supplier: 'Hợp tác xã Thạnh Phú',
+      lastRestocked: '2025-01-15',
+      farm: {
+        name: 'Hợp tác xã Thạnh Phú',
+        province: 'Sóc Trăng',
+        farmer: 'Nguyễn Văn Minh',
+        certifications: ['VietGAP', '3_Sao']
+      },
+      harvest: {
+        season: 'Vụ Đông Xuân',
+        date: '2025-01-15',
+        quantity: 50
+      },
+      blockchain: {
+        verified: true,
+        traceabilityCode: 'ST25-RICE-2025-001',
+        transactionHash: '0x' + Math.random().toString(16).substr(2, 40)
+      },
+      transportation: {
+        method: 'Đường thủy + Đường bộ',
+        route: ['Sóc Trăng', 'Cần Thơ', 'TP.HCM'],
+        sustainability: 92
+      },
+      qualityGrade: 'A+',
+      marketDemand: 'high'
+    },
+    {
+      id: 'AGR-002',
+      name: 'Cat Chu Mango',
+      nameVi: 'Xoài Cát Chu',
+      sku: 'MANGO-002',
+      category: 'Trái cây ĐBSCL',
+      price: 45000,
+      unit: 'kg',
+      stockLevel: 15000,
+      reorderPoint: 3000,
+      tempClass: 'CHILL',
+      tempRange: '8-12°C',
+      shelfLifeDays: 14,
+      description: 'Xoài Cát Chu thơm ngon, chất lượng xuất khẩu',
+      image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=500',
+      origin: 'Đồng Tháp',
+      isPopular: true,
+      certifications: ['VietGAP', 'Organic', 'GlobalGAP'],
+      weight: 10,
+      cubic: 0.015,
+      subcategory: 'Trái cây tươi',
+      supplier: 'Vườn xoài Minh Châu',
+      lastRestocked: '2025-01-14',
+      farm: {
+        name: 'Vườn xoài Minh Châu',
+        province: 'Đồng Tháp',
+        farmer: 'Lê Thị Hồng',
+        certifications: ['VietGAP', 'Organic']
+      },
+      harvest: {
+        season: 'Mùa khô',
+        date: '2025-03-20',
+        quantity: 15
+      },
+      blockchain: {
+        verified: true,
+        traceabilityCode: 'MANGO-CAT-2025-002'
+      },
+      transportation: {
+        method: 'Đường bộ',
+        route: ['Đồng Tháp', 'TP.HCM', 'Hà Nội'],
+        sustainability: 88
+      },
+      qualityGrade: 'A+',
+      marketDemand: 'high'
+    },
+    {
+      id: 'AGR-003',
+      name: 'Tra Fish Fillet',
+      nameVi: 'Cá Tra Phi Lê',
+      sku: 'FISH-003',
+      category: 'Thủy sản ĐBSCL',
+      price: 65000,
+      unit: 'kg',
+      stockLevel: 25000,
+      reorderPoint: 5000,
+      tempClass: 'FROZEN',
+      tempRange: '-18°C',
+      shelfLifeDays: 365,
+      description: 'Cá tra phi lê tươi ngon, chất lượng xuất khẩu',
+      image: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=500',
+      origin: 'An Giang',
+      isPopular: true,
+      certifications: ['VietGAP', 'ASC', 'HACCP'],
+      weight: 2,
+      cubic: 0.003,
+      subcategory: 'Cá phi lê',
+      supplier: 'Trại nuôi Phú Hưng',
+      lastRestocked: '2025-01-13',
+      farm: {
+        name: 'Trại nuôi Phú Hưng',
+        province: 'An Giang',
+        farmer: 'Trần Văn Thành',
+        certifications: ['VietGAP', 'ASC']
+      },
+      harvest: {
+        season: 'Mùa mưa',
+        date: '2025-02-10',
+        quantity: 25
+      },
+      blockchain: {
+        verified: true,
+        traceabilityCode: 'FISH-TRA-2025-003'
+      },
+      transportation: {
+        method: 'Xe lạnh',
+        route: ['An Giang', 'TP.HCM', 'Cảng Cát Lái'],
+        sustainability: 85
+      },
+      qualityGrade: 'A',
+      marketDemand: 'high'
+    },
+    {
+      id: 'AGR-004',
+      name: 'Dragon Fruit',
+      nameVi: 'Thanh Long Ruột Đỏ',
+      sku: 'DRAGON-004',
+      category: 'Trái cây ĐBSCL',
+      price: 35000,
+      unit: 'kg',
+      stockLevel: 8000,
+      reorderPoint: 2000,
+      tempClass: 'CHILL',
+      tempRange: '10-15°C',
+      shelfLifeDays: 21,
+      description: 'Thanh long ruột đỏ ngọt thơm từ Tiền Giang',
+      image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500',
+      origin: 'Tiền Giang',
+      isPopular: false,
+      certifications: ['VietGAP', 'Organic'],
+      weight: 8,
+      cubic: 0.012,
+      subcategory: 'Trái cây nhiệt đới',
+      supplier: 'Vườn Thanh Long Phúc Lộc',
+      lastRestocked: '2025-01-16',
+      farm: {
+        name: 'Vườn Thanh Long Phúc Lộc',
+        province: 'Tiền Giang',
+        farmer: 'Phạm Văn Phúc',
+        certifications: ['VietGAP']
+      },
+      harvest: {
+        season: 'Quanh năm',
+        date: '2025-11-01',
+        quantity: 8
+      },
+      blockchain: {
+        verified: true,
+        traceabilityCode: 'DRAGON-TG-2025-004'
+      },
+      qualityGrade: 'A',
+      marketDemand: 'medium'
+    },
+    {
+      id: 'AGR-005',
+      name: 'Coconut',
+      nameVi: 'Dừa Xiêm Xanh',
+      sku: 'COCONUT-005',
+      category: 'Trái cây ĐBSCL',
+      price: 15000,
+      unit: 'trái',
+      stockLevel: 12000,
+      reorderPoint: 3000,
+      tempClass: 'DRY',
+      tempRange: '25-30°C',
+      shelfLifeDays: 60,
+      description: 'Dừa xiêm xanh tươi mát từ Bến Tre',
+      image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=500',
+      origin: 'Bến Tre',
+      isPopular: true,
+      certifications: ['VietGAP'],
+      weight: 1.5,
+      cubic: 0.002,
+      subcategory: 'Dừa tươi',
+      supplier: 'Vườn dừa Minh Tâm',
+      lastRestocked: '2025-01-17',
+      farm: {
+        name: 'Vườn dừa Minh Tâm',
+        province: 'Bến Tre',
+        farmer: 'Nguyễn Minh Tâm',
+        certifications: ['VietGAP']
+      },
+      harvest: {
+        season: 'Quanh năm',
+        date: '2025-10-15',
+        quantity: 12
+      },
+      blockchain: {
+        verified: false,
+        traceabilityCode: 'COCONUT-BT-2025-005'
+      },
+      qualityGrade: 'A',
+      marketDemand: 'high'
+    }
+  ]
+
+  return [...agriculturalProducts, ...baseProducts.slice(0, 10)]
+}
+
+// Fetch products from enhanced catalog
+const fetchProducts = async (): Promise<LocalEnhancedProduct[]> => {
   await new Promise(resolve => setTimeout(resolve, 500))
-  return getAllProducts()
+  return getMekongDeltaProducts()
 }
 
 /**
@@ -43,53 +311,92 @@ export default function ProductsPageSimple() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedProvince, setSelectedProvince] = useState('all')
+  const [selectedSeason, setSelectedSeason] = useState('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [tempFilter, setTempFilter] = useState<string>('all')
+  const [blockchainFilter, setBlockchainFilter] = useState<string>('all')
+  const [qualityFilter, setQualityFilter] = useState<string>('all')
   const [isScannerOpen, setIsScannerOpen] = useState(false)
 
-  const { data: products = [], isLoading, refetch } = useQuery<Product[]>({
+  const { data: products = [], isLoading, refetch } = useQuery<LocalEnhancedProduct[]>({
     queryKey: ['products'],
     queryFn: fetchProducts,
     refetchInterval: 60000,
   })
 
-  // Filter products
+  const currentSeason = getCurrentSeason()
+
+  // Enhanced filter products with ĐBSCL specific filters
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return products.filter((product: LocalEnhancedProduct) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.nameVi.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+        product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.farm?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.farm?.farmer || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.blockchain?.traceabilityCode || '').toLowerCase().includes(searchTerm.toLowerCase())
       
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
       const matchesTemp = tempFilter === 'all' || product.tempClass === tempFilter
+      const matchesProvince = selectedProvince === 'all' || (product.farm?.province || product.origin) === selectedProvince
+      const matchesSeason = selectedSeason === 'all' || (product.harvest?.season || '').includes(selectedSeason)
+      const matchesBlockchain = blockchainFilter === 'all' || 
+        (blockchainFilter === 'verified' && product.blockchain?.verified) ||
+        (blockchainFilter === 'unverified' && !product.blockchain?.verified)
+      const matchesQuality = qualityFilter === 'all' || product.qualityGrade === qualityFilter
       
-      return matchesSearch && matchesCategory && matchesTemp
+      return matchesSearch && matchesCategory && matchesTemp && matchesProvince && 
+             matchesSeason && matchesBlockchain && matchesQuality
     })
-  }, [products, searchTerm, selectedCategory, tempFilter])
+  }, [products, searchTerm, selectedCategory, tempFilter, selectedProvince, selectedSeason, blockchainFilter, qualityFilter])
 
-  // Calculate stats
+  // Enhanced calculate stats with ĐBSCL specific metrics
   const stats = useMemo(() => {
-    const categories = [...new Set(products.map(p => p.category))]
-    const lowStock = products.filter(p => p.stockLevel <= p.reorderPoint).length
+    const categories = [...new Set(products.map((p: LocalEnhancedProduct) => p.category))]
+    const lowStock = products.filter((p: LocalEnhancedProduct) => p.stockLevel <= p.reorderPoint).length
+    const agriculturalProducts = products.filter((p: LocalEnhancedProduct) => p.category.includes('ĐBSCL'))
+    const blockchainVerified = products.filter((p: LocalEnhancedProduct) => p.blockchain?.verified).length
+    const premiumGrade = products.filter((p: LocalEnhancedProduct) => p.qualityGrade === 'A+').length
+    const totalValue = products.reduce((sum: number, p: LocalEnhancedProduct) => sum + (p.price * p.stockLevel), 0)
     
     return {
       total: products.length,
-      frozen: products.filter(p => p.tempClass === 'FROZEN').length,
-      chilled: products.filter(p => p.tempClass === 'CHILL').length,
+      frozen: products.filter((p: LocalEnhancedProduct) => p.tempClass === 'FROZEN').length,
+      chilled: products.filter((p: LocalEnhancedProduct) => p.tempClass === 'CHILL').length,
       categories: categories.length,
       lowStock,
+      agricultural: agriculturalProducts.length,
+      blockchainVerified,
+      premiumGrade,
+      totalValue,
+      avgSustainability: agriculturalProducts.reduce((sum: number, p: LocalEnhancedProduct) => sum + (p.transportation?.sustainability || 0), 0) / agriculturalProducts.length || 0
     }
   }, [products])
 
-  const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products])
+  const categories = useMemo(() => [...new Set(products.map((p: LocalEnhancedProduct) => p.category))], [products])
+  const provinces = useMemo(() => [...new Set(products.map((p: LocalEnhancedProduct) => p.farm?.province || p.origin).filter(Boolean))], [products])
+  const seasons = useMemo(() => [...new Set(products.map((p: LocalEnhancedProduct) => p.harvest?.season).filter(Boolean))] as string[], [products])
 
-  const handleScanResult = (value: string) => {
-    setSearchTerm(value)
+  const handleScanResult = async (value: string) => {
+    try {
+      // Try to verify blockchain first
+      const verification = await blockchainService.verifyProduct(value)
+      if (verification.verified && verification.product) {
+        setSearchTerm(verification.product.name)
+      } else {
+        setSearchTerm(value)
+      }
+    } catch {
+      setSearchTerm(value)
+    }
     setIsScannerOpen(false)
   }
+
+
 
   const getTempClassConfig = (tempClass: string) => {
     const configs = {
@@ -146,134 +453,113 @@ export default function ProductsPageSimple() {
         />
       )}
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-            Quản lý sản phẩm
-          </h1>
-          <p className="text-xs md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
-            Danh mục sản phẩm với thông tin chi tiết và hình ảnh
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs md:text-sm hidden md:inline-flex"
-            onClick={() => setIsScannerOpen(true)}
-          >
-            <Scan className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-            <span className="hidden sm:inline">Quét mã</span>
-            <span className="sm:hidden">Scan</span>
-          </Button>
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-white dark:bg-gray-700 shadow-lg scale-105'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-              }`}
-            >
-              <Grid3x3 className="w-3 h-3 md:w-4 md:h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 shadow-lg scale-105'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-              }`}
-            >
-              <List className="w-3 h-3 md:w-4 md:h-4" />
-            </button>
+      {/* Simple Header */}
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Quản Lý Sản Phẩm Nông Nghiệp ĐBSCL
+            </h1>
+            <p className="text-gray-600">
+              Hệ thống quản lý sản phẩm nông nghiệp Đồng bằng sông Cửu Long
+            </p>
           </div>
-
-          <Button onClick={() => refetch()} variant="outline" size="sm" className="text-xs md:text-sm">
-            <RefreshCw className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-            <span className="hidden sm:inline">Làm mới</span>
-          </Button>
-
-          <Button 
-            onClick={() => navigate('/products/create')}
-            size="sm"
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-xs md:text-sm"
-          >
-            <Plus className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-            <span className="hidden sm:inline">Thêm</span>
-            <span className="sm:hidden">+</span>
-          </Button>
+          
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-600">{stats.total}</p>
+              <p className="text-sm text-gray-500">Tổng sản phẩm</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">{stats.blockchainVerified}</p>
+              <p className="text-sm text-gray-500">Blockchain verified</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-orange-600">{stats.lowStock}</p>
+              <p className="text-sm text-gray-500">Sắp hết hàng</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
-          <CardContent className="p-3 md:p-5">
-            <div className="flex items-center justify-between mb-1 md:mb-2">
-              <Package className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
+      {/* Simple Search & Filter Bar */}
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 border-gray-300"
+              />
             </div>
-            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tổng SP</p>
-            <p className="text-xl md:text-3xl font-bold text-emerald-600">{stats.total}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-          <CardContent className="p-3 md:p-5">
-            <div className="flex items-center justify-between mb-1 md:mb-2">
-              <div className="text-2xl md:text-3xl">🧊</div>
+          </div>
+          
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            {['Tất cả', 'Ngũ cốc ĐBSCL', 'Trái cây ĐBSCL', 'Thực phẩm chế biến ĐBSCL'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setSelectedCategory(filter === 'Tất cả' ? 'all' : filter)}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  (filter === 'Tất cả' && selectedCategory === 'all') || selectedCategory === filter
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+          
+          {/* Simple View Controls */}
+          <div className="flex items-center gap-2">
+            {/* View Toggle */}
+            <div className="flex border border-gray-300 rounded">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 ${
+                  viewMode === 'grid'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 ${
+                  viewMode === 'list'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Đông lạnh</p>
-            <p className="text-xl md:text-3xl font-bold text-purple-600">{stats.frozen}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-          <CardContent className="p-3 md:p-5">
-            <div className="flex items-center justify-between mb-1 md:mb-2">
-              <div className="text-2xl md:text-3xl">❄️</div>
-            </div>
-            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Mát</p>
-            <p className="text-xl md:text-3xl font-bold text-blue-600">{stats.chilled}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
-          <CardContent className="p-3 md:p-5">
-            <div className="flex items-center justify-between mb-1 md:mb-2">
-              <Box className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
-            </div>
-            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Danh mục</p>
-            <p className="text-xl md:text-3xl font-bold text-amber-600">{stats.categories}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20">
-          <CardContent className="p-3 md:p-5">
-            <div className="flex items-center justify-between mb-1 md:mb-2">
-              <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
-            </div>
-            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Sắp hết</p>
-            <p className="text-xl md:text-3xl font-bold text-red-600">{stats.lowStock}</p>
-          </CardContent>
-        </Card>
+            
+            {/* Add Product Button */}
+            <Button 
+              onClick={() => navigate('/products/create')}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Thêm sản phẩm
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Search and Filters */}
-      <Card className="border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Bar */}
+      {/* Products Display Section */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Tìm kiếm theo tên, SKU, danh mục..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                 className="pl-11 h-11"
               />
             </div>
@@ -288,129 +574,217 @@ export default function ProductsPageSimple() {
               Bộ lọc
               {(selectedCategory !== 'all' || tempFilter !== 'all') && (
                 <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-xs">
-                  {[selectedCategory !== 'all', tempFilter !== 'all'].filter(Boolean).length}
+                  {[
+                    selectedCategory !== 'all', 
+                    selectedProvince !== 'all', 
+                    selectedSeason !== 'all',
+                    tempFilter !== 'all',
+                    blockchainFilter !== 'all',
+                    qualityFilter !== 'all'
+                  ].filter(Boolean).length}
                 </Badge>
               )}
             </Button>
           </div>
 
-          {/* Filter Panel */}
+          {/* Enhanced Filter Panel with ĐBSCL specific filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Danh mục</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                >
-                  <option value="all">Tất cả danh mục</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+            <div className="mt-4 pt-4 border-t space-y-4">
+              {/* Row 1: Category, Province, Season */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    Danh mục
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả danh mục</option>
+                    {categories.map((cat: string) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Tỉnh/Xuất xứ
+                  </label>
+                  <select
+                    value={selectedProvince}
+                    onChange={(e) => setSelectedProvince(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả tỉnh</option>
+                    {provinces.map((province: string) => (
+                      <option key={province} value={province}>
+                        {province}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Mùa vụ
+                  </label>
+                  <select
+                    value={selectedSeason}
+                    onChange={(e) => setSelectedSeason(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả mùa</option>
+                    {seasons.map((season: string) => (
+                      <option key={season} value={season}>
+                        {season}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Nhiệt độ bảo quản</label>
-                <select
-                  value={tempFilter}
-                  onChange={(e) => setTempFilter(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
-                >
-                  <option value="all">Tất cả</option>
-                  <option value="FROZEN">🧊 Đông lạnh</option>
-                  <option value="CHILL">❄️ Mát</option>
-                  <option value="DRY">📦 Khô</option>
-                </select>
-              </div>
+              {/* Row 2: Temperature, Blockchain, Quality */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <Thermometer className="w-4 h-4" />
+                    Nhiệt độ
+                  </label>
+                  <select
+                    value={tempFilter}
+                    onChange={(e) => setTempFilter(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả</option>
+                    <option value="FROZEN">🧊 Đông lạnh</option>
+                    <option value="CHILL">❄️ Mát</option>
+                    <option value="DRY">📦 Khô</option>
+                  </select>
+                </div>
 
-              <div className="flex items-end">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSelectedCategory('all')
-                    setTempFilter('all')
-                  }}
-                  className="h-10"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Xóa bộ lọc
-                </Button>
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Blockchain
+                  </label>
+                  <select
+                    value={blockchainFilter}
+                    onChange={(e) => setBlockchainFilter(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả</option>
+                    <option value="verified">✅ Đã xác thực</option>
+                    <option value="unverified">⏳ Chưa xác thực</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    Chất lượng
+                  </label>
+                  <select
+                    value={qualityFilter}
+                    onChange={(e) => setQualityFilter(e.target.value)}
+                    className="w-full h-10 px-3 border rounded-lg bg-white dark:bg-gray-800"
+                  >
+                    <option value="all">Tất cả</option>
+                    <option value="A+">⭐ A+ (Cao cấp)</option>
+                    <option value="A">🌟 A (Tốt)</option>
+                    <option value="B">📋 B (Trung bình)</option>
+                    <option value="C">📄 C (Cơ bản)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedCategory('all')
+                      setSelectedProvince('all')
+                      setSelectedSeason('all')
+                      setTempFilter('all')
+                      setBlockchainFilter('all')
+                      setQualityFilter('all')
+                    }}
+                    className="h-10 w-full"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Xóa bộ lọc
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Products Display */}
+      {/* Simple Products Display */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredProducts.map((product: LocalEnhancedProduct) => {
             const tempConfig = getTempClassConfig(product.tempClass)
             const stockStatus = getStockStatus(product)
             
             return (
-              <Card
-                key={product.id}
-                className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 border-0 overflow-hidden bg-white dark:bg-gray-800"
-              >
-                {/* Product Image */}
-                <div className="relative h-48 overflow-hidden bg-gray-100">
+              <Card key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                {/* Simple Product Image */}
+                <div className="relative h-48 bg-gray-100">
                   <img
                     src={product.image}
                     alt={product.nameVi}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover"
                   />
-                  <div className={`absolute top-3 right-3 bg-gradient-to-r ${tempConfig.gradient} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+                  
+                  {/* Temperature Badge */}
+                  <div className={`absolute top-2 right-2 ${tempConfig.color} text-white px-2 py-1 rounded text-xs font-medium`}>
                     {tempConfig.icon} {tempConfig.label}
                   </div>
+                  
+                  {/* Popular Badge */}
                   {product.isPopular && (
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                    <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                       <Star className="w-3 h-3 fill-white" />
                       Hot
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <div className="flex items-center gap-2 text-white text-xs">
-                      <MapPin className="w-3 h-3" />
-                      {product.origin}
-                    </div>
-                  </div>
                 </div>
 
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-4">
                   {/* Title */}
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
-                      {product.nameVi}
-                    </h3>
-                    <p className="text-xs text-gray-500 line-clamp-1">{product.name}</p>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">
+                    {product.nameVi}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-1">{product.name}</p>
 
-                  {/* Price & SKU */}
-                  <div className="flex items-center justify-between">
+                  {/* Price & Basic Info */}
+                  <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm text-gray-500">Giá</p>
-                      <p className="text-lg font-bold text-emerald-600">
-                        {product.price.toLocaleString('vi-VN')}đ
+                      <p className="text-xs text-gray-500">Giá bán</p>
+                      <p className="text-xl font-bold text-emerald-600">
+                        {(product.price / 1000).toFixed(0)}K
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">SKU</p>
-                      <p className="text-xs font-mono font-bold text-gray-700 dark:text-gray-300">
+                      <p className="text-sm font-mono text-gray-700">
                         {product.sku}
                       </p>
                     </div>
                   </div>
 
-                  {/* Stock Level */}
-                  <div>
+                  {/* Stock Status */}
+                  <div className="mb-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-gray-500">Tồn kho</span>
-                      <span className={`text-xs font-bold ${stockStatus.textColor}`}>
+                      <span className={`text-xs font-medium ${stockStatus.textColor}`}>
                         {stockStatus.label}
                       </span>
                     </div>
@@ -421,37 +795,30 @@ export default function ProductsPageSimple() {
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {product.stockLevel} {product.unit} / Tái đặt: {product.reorderPoint} {product.unit}
+                      {product.stockLevel} {product.unit}
                     </p>
                   </div>
 
-                  {/* Quick Info */}
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
-                      <Thermometer className="w-3 h-3 text-blue-500 mb-1" />
-                      <p className="text-gray-500 dark:text-gray-400">Nhiệt độ</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">{product.tempRange}</p>
+                  {/* Basic Info Grid */}
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Thermometer className="w-3 h-3 text-blue-500" />
+                        <span className="text-gray-600">Nhiệt độ</span>
+                      </div>
+                      <p className="font-medium text-gray-900">{product.tempRange}</p>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
-                      <Clock className="w-3 h-3 text-amber-500 mb-1" />
-                      <p className="text-gray-500 dark:text-gray-400">HSD</p>
-                      <p className="font-semibold text-gray-900 dark:text-white">{product.shelfLifeDays} ngày</p>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="flex items-center gap-1 mb-1">
+                        <MapPin className="w-3 h-3 text-green-500" />
+                        <span className="text-gray-600">Xuất xứ</span>
+                      </div>
+                      <p className="font-medium text-gray-900">{product.origin}</p>
                     </div>
                   </div>
 
-                  {/* Certifications */}
-                  {product.certifications.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {product.certifications.slice(0, 3).map((cert) => (
-                        <Badge key={cert} variant="outline" className="text-xs px-2 py-0.5">
-                          {cert}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2 border-t">
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
@@ -464,7 +831,7 @@ export default function ProductsPageSimple() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                      className="px-3"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -472,104 +839,414 @@ export default function ProductsPageSimple() {
                 </CardContent>
               </Card>
             )
+                    <div className="p-3 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100/50 dark:border-blue-700/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Tồn kho</span>
+                        <motion.span 
+                          className={`text-sm font-bold px-2 py-1 rounded-full ${stockStatus.textColor} ${stockStatus.color}/20`}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          {stockStatus.label}
+                        </motion.span>
+                      </div>
+                      <div className="h-3 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden mb-2">
+                        <motion.div
+                          className={`h-full ${stockStatus.color} rounded-full`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((product.stockLevel / (product.reorderPoint * 3)) * 100, 100)}%` }}
+                          transition={{ duration: 1, delay: index * 0.1 }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <strong className="font-semibold">{product.stockLevel}</strong> {product.unit} • 
+                        Tái đặt: <strong>{product.reorderPoint}</strong> {product.unit}
+                      </p>
+                    </div>
+
+                    {/* Enhanced Agricultural Info */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.div 
+                        className="p-3 rounded-xl bg-gradient-to-br from-cyan-50/80 to-blue-50/80 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-100/50 dark:border-cyan-700/30"
+                        whileHover={{ scale: 1.05, rotate: 1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Thermometer className="w-4 h-4 text-cyan-600 dark:text-cyan-400 mb-2" />
+                        <p className="text-xs text-cyan-700 dark:text-cyan-300 font-medium mb-1">Nhiệt độ</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{product.tempRange}</p>
+                      </motion.div>
+                      <motion.div 
+                        className="p-3 rounded-xl bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100/50 dark:border-amber-700/30"
+                        whileHover={{ scale: 1.05, rotate: -1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-2" />
+                        <p className="text-xs text-amber-700 dark:text-amber-300 font-medium mb-1">HSD</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{product.shelfLifeDays} ngày</p>
+                      </motion.div>
+                    </div>
+
+                    {/* Farm & Blockchain Info - Enhanced products only */}
+                    {(product as LocalEnhancedProduct).farm && (
+                      <div className="space-y-3 pt-4 border-t border-gray-100/50 dark:border-gray-700/50">
+                        {/* Farm Info */}
+                        <motion.div 
+                          className="p-3 rounded-xl bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100/50 dark:border-green-700/30"
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Sprout className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <span className="text-sm font-bold text-green-700 dark:text-green-300">
+                                {(product as LocalEnhancedProduct).farm?.name}
+                              </span>
+                            </div>
+                            {(product as LocalEnhancedProduct).qualityGrade && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs px-2 py-1 font-bold ${
+                                  (product as LocalEnhancedProduct).qualityGrade === 'A+' 
+                                    ? 'border-yellow-400 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20' 
+                                    : 'border-gray-300'
+                                }`}
+                              >
+                                ⭐ {(product as LocalEnhancedProduct).qualityGrade}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                            📍 {(product as LocalEnhancedProduct).farm?.province} • 
+                            {(product as LocalEnhancedProduct).harvest?.season && ` 🌾 ${(product as LocalEnhancedProduct).harvest?.season}`}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            👨‍🌾 {(product as LocalEnhancedProduct).farm?.farmer}
+                          </p>
+                        </motion.div>
+
+                        {/* Blockchain Status */}
+                        {(product as LocalEnhancedProduct).blockchain && (
+                          <motion.div 
+                            className="p-3 rounded-xl bg-gradient-to-r from-blue-50/80 to-cyan-50/80 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100/50 dark:border-blue-700/30"
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                                  Blockchain
+                                </span>
+                              </div>
+                              {(product as LocalEnhancedProduct).blockchain?.verified ? (
+                                <div className="flex items-center gap-1">
+                                  <CheckCircle className="w-4 h-4 text-green-500" />
+                                  <span className="text-xs font-bold text-green-600">Verified</span>
+                                </div>
+                              ) : (
+                                <span className="text-xs font-bold text-orange-500">Pending</span>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Certifications */}
+                    {product.certifications.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {product.certifications.slice(0, 3).map((cert: string) => (
+                          <motion.div
+                            key={cert}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                          >
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs px-3 py-1 font-medium bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/30 text-purple-700 dark:text-purple-300"
+                            >
+                              🏆 {cert}
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-3 pt-4 border-t border-gray-100/50 dark:border-gray-700/50">
+                      <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200/50 dark:border-emerald-700/30 text-emerald-700 dark:text-emerald-300 hover:from-emerald-100 hover:to-teal-100 font-medium"
+                          onClick={() => navigate(`/products/${product.id}`)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Chi tiết
+                        </Button>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="px-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/30 text-blue-700 dark:text-blue-300 hover:from-blue-100 hover:to-indigo-100"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </div>
+                </CardContent>
+                </Card>
+              </motion.div>
+            )
           })}
         </div>
       ) : (
         // List View
         <div className="space-y-3">
-          {filteredProducts.map((product) => {
+          {filteredProducts.map((product: LocalEnhancedProduct, index) => {
             const tempConfig = getTempClassConfig(product.tempClass)
             const stockStatus = getStockStatus(product)
 
             return (
-              <Card
+              <motion.div
                 key={product.id}
-                className="hover:shadow-lg transition-all duration-200 border-0 overflow-hidden"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  show: { opacity: 1, x: 0 }
+                }}
+                whileHover={{ scale: 1.01, y: -2 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <CardContent className="p-0">
-                  <div className="flex items-center gap-4">
-                    {/* Image */}
-                    <div className="relative w-32 h-32 flex-shrink-0">
-                      <img
-                        src={product.image}
-                        alt={product.nameVi}
-                        className="w-full h-full object-cover"
-                      />
-                      {product.isPopular && (
-                        <div className="absolute top-2 left-2 bg-yellow-400 text-white px-2 py-0.5 rounded text-xs font-bold">
-                          <Star className="w-3 h-3 inline fill-white" />
+                <Card className="border-0 overflow-hidden bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-800/95 dark:to-gray-900/95 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all duration-500">
+                  <CardContent className="p-0">
+                    <div className="flex items-stretch">
+                      {/* Image Section */}
+                      <div className="relative w-40 lg:w-48 flex-shrink-0 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/30 to-teal-100/30 dark:from-emerald-900/30 dark:to-teal-900/30"></div>
+                        <img
+                          src={product.image}
+                          alt={product.nameVi}
+                          className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                        />
+                        
+                        {/* Glassmorphism overlays */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                        
+                        {/* Popular Badge */}
+                        {product.isPopular && (
+                          <motion.div 
+                            className="absolute top-3 left-3 backdrop-blur-md bg-gradient-to-r from-yellow-400/90 to-orange-400/90 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 border border-yellow-300/30"
+                            initial={{ scale: 0, rotate: -10 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: index * 0.05 + 0.2 }}
+                          >
+                            <Star className="w-3 h-3 fill-white" />
+                            Hot
+                          </motion.div>
+                        )}
+                        
+                        {/* Temperature Badge */}
+                        <div className="absolute bottom-3 right-3 backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/30 text-white px-2 py-1 rounded-lg text-xs font-bold">
+                          <span className="mr-1">{tempConfig.icon}</span>
+                          {tempConfig.label}
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Info */}
-                    <div className="flex-1 py-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                              {product.nameVi}
-                            </h3>
-                            <Badge className={tempConfig.color}>
-                              {tempConfig.icon} {tempConfig.label}
-                            </Badge>
-                            {product.isPopular && (
-                              <Badge className="bg-yellow-100 text-yellow-800">
-                                <Star className="w-3 h-3 mr-1 fill-yellow-800" />
-                                Popular
-                              </Badge>
-                            )}
+                      {/* Content Section */}
+                      <div className="flex-1 p-6 relative">
+                        {/* Background Gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-gray-50/60 dark:from-gray-800/80 dark:to-gray-900/60 backdrop-blur-sm"></div>
+                        
+                        <div className="relative z-10">
+                          {/* Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                                  {product.nameVi}
+                                </h3>
+                                <motion.div whileHover={{ scale: 1.1 }}>
+                                  <Badge className={`${tempConfig.color} shadow-md`}>
+                                    {tempConfig.icon} {tempConfig.label}
+                                  </Badge>
+                                </motion.div>
+                                {product.isPopular && (
+                                  <motion.div whileHover={{ scale: 1.1 }}>
+                                    <Badge className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border-yellow-200 shadow-md">
+                                      <Star className="w-3 h-3 mr-1 fill-yellow-800" />
+                                      Popular
+                                    </Badge>
+                                  </motion.div>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{product.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2">{product.description}</p>
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">{product.name}</p>
-                          <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-8 gap-4 text-sm">
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">SKU</p>
-                          <p className="font-mono font-bold text-xs">{product.sku}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Danh mục</p>
-                          <p className="font-semibold">{product.category}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Giá</p>
-                          <p className="font-bold text-emerald-600">{(product.price / 1000).toFixed(0)}K</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Tồn kho</p>
-                          <p className={`font-bold ${stockStatus.textColor}`}>
-                            {product.stockLevel} {product.unit}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Nhiệt độ</p>
-                          <p className="font-semibold text-xs">{product.tempRange}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">HSD</p>
-                          <p className="font-semibold">{product.shelfLifeDays}d</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Xuất xứ</p>
-                          <p className="font-semibold text-xs">{product.origin}</p>
-                        </div>
-                        <div className="flex items-end gap-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-4 h-4 mr-1" />
-                            Xem
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-emerald-600">
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          {/* Basic Info Grid */}
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            {/* Price & SKU */}
+                            <motion.div 
+                              className="p-4 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100/50 dark:border-emerald-700/30"
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Giá bán</p>
+                              <p className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                                {(product.price / 1000).toFixed(0)}K
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">
+                                SKU: {product.sku}
+                              </p>
+                            </motion.div>
+
+                            {/* Stock Status */}
+                            <motion.div 
+                              className="p-4 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100/50 dark:border-blue-700/30"
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Tồn kho</p>
+                              <p className={`text-lg font-bold ${stockStatus.textColor}`}>
+                                {product.stockLevel} {product.unit}
+                              </p>
+                              <div className="h-1.5 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden mt-2">
+                                <motion.div
+                                  className={`h-full ${stockStatus.color} rounded-full`}
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${Math.min((product.stockLevel / (product.reorderPoint * 3)) * 100, 100)}%` }}
+                                  transition={{ duration: 1, delay: index * 0.05 }}
+                                />
+                              </div>
+                            </motion.div>
+
+                            {/* Temperature */}
+                            <motion.div 
+                              className="p-4 rounded-xl bg-gradient-to-r from-cyan-50/80 to-blue-50/80 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-100/50 dark:border-cyan-700/30"
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <Thermometer className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                                <p className="text-xs text-cyan-600 dark:text-cyan-400 font-medium">Nhiệt độ</p>
+                              </div>
+                              <p className="text-sm font-bold text-gray-900 dark:text-white">{product.tempRange}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">HSD: {product.shelfLifeDays} ngày</p>
+                            </motion.div>
+
+                            {/* Category & Origin */}
+                            <motion.div 
+                              className="p-4 rounded-xl bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100/50 dark:border-purple-700/30"
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Danh mục</p>
+                              <p className="text-sm font-bold text-gray-900 dark:text-white mb-1">{product.category}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">📍 {product.origin}</p>
+                            </motion.div>
+                          </div>
+
+                          {/* Enhanced Agricultural Info */}
+                          {(product as LocalEnhancedProduct).farm && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4 border-t border-gray-100/50 dark:border-gray-700/50">
+                              {/* Farm Info */}
+                              <motion.div 
+                                className="p-4 rounded-xl bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-100/50 dark:border-green-700/30"
+                                whileHover={{ scale: 1.02 }}
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Sprout className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                  <span className="text-sm font-bold text-green-700 dark:text-green-300">
+                                    {(product as LocalEnhancedProduct).farm?.name}
+                                  </span>
+                                  {(product as LocalEnhancedProduct).qualityGrade && (
+                                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                      ⭐ {(product as LocalEnhancedProduct).qualityGrade}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                  📍 {(product as LocalEnhancedProduct).farm?.province} • 
+                                  🌾 {(product as LocalEnhancedProduct).harvest?.season || 'N/A'}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  👨‍🌾 {(product as LocalEnhancedProduct).farm?.farmer}
+                                </p>
+                              </motion.div>
+
+                              {/* Blockchain Info */}
+                              {(product as LocalEnhancedProduct).blockchain && (
+                                <motion.div 
+                                  className="p-4 rounded-xl bg-gradient-to-r from-blue-50/80 to-cyan-50/80 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100/50 dark:border-blue-700/30"
+                                  whileHover={{ scale: 1.02 }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                      <span className="text-sm font-bold text-blue-700 dark:text-blue-300">Blockchain</span>
+                                    </div>
+                                    {(product as LocalEnhancedProduct).blockchain?.verified ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                        <span className="text-xs font-bold text-green-600">Verified</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs font-bold text-orange-500">Pending</span>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Certifications & Actions */}
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100/50 dark:border-gray-700/50">
+                            {/* Certifications */}
+                            <div className="flex flex-wrap gap-2">
+                              {product.certifications.slice(0, 2).map((cert: string) => (
+                                <motion.div
+                                  key={cert}
+                                  whileHover={{ scale: 1.05 }}
+                                  transition={{ type: "spring", stiffness: 400 }}
+                                >
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs px-3 py-1 font-medium bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/30 text-purple-700 dark:text-purple-300"
+                                  >
+                                    🏆 {cert}
+                                  </Badge>
+                                </motion.div>
+                              ))}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3">
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200/50 dark:border-emerald-700/30 text-emerald-700 dark:text-emerald-300 hover:from-emerald-100 hover:to-teal-100 font-medium"
+                                  onClick={() => navigate(`/products/${product.id}`)}
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Chi tiết
+                                </Button>
+                              </motion.div>
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="px-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/30 text-blue-700 dark:text-blue-300 hover:from-blue-100 hover:to-indigo-100"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </motion.div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )
           })}
         </div>

@@ -291,25 +291,32 @@ export function CommandPalette() {
               onValueChange={setSearch}
             >
               {/* Search Input */}
-              <div className="flex items-center border-b border-gray-200 dark:border-gray-700 px-4">
-                <Search className="w-5 h-5 text-gray-400 mr-3" />
+              <div className="flex items-center border-b border-gray-200 dark:border-gray-700 px-4 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+                <Search className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
                 <Command.Input
                   placeholder="Tìm kiếm hoặc nhập lệnh..."
-                  className="flex-1 py-4 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                  className="flex-1 py-4 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-500 text-sm focus:outline-none"
+                  autoFocus
                 />
-                <kbd className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 border rounded">
+                <kbd className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded font-mono">
                   ESC
                 </kbd>
               </div>
 
               {/* Command List */}
-              <Command.List className="max-h-[400px] overflow-y-auto p-2">
-                <Command.Empty className="py-12 text-center text-gray-500">
-                  Không tìm thấy kết quả.
+              <Command.List className="max-h-[450px] overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+                <Command.Empty className="py-12 text-center text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <Search className="w-8 h-8 text-gray-400" />
+                    <p className="text-sm">Không tìm thấy kết quả nào</p>
+                  </div>
                 </Command.Empty>
 
                 {/* Group by Category */}
-                <Command.Group heading="Navigation" className="mb-2">
+                <Command.Group heading="Điều hướng" className="mb-3">
+                  <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Điều hướng
+                  </div>
                   {commands
                     .filter(cmd => cmd.category === 'Navigation')
                     .map(cmd => (
@@ -317,17 +324,17 @@ export function CommandPalette() {
                         key={cmd.id}
                         value={cmd.label + ' ' + cmd.keywords?.join(' ')}
                         onSelect={() => handleSelect(cmd)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/20 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex items-center gap-3 px-3 py-3 mb-1 rounded-xl cursor-pointer aria-selected:bg-gradient-to-r aria-selected:from-blue-50 aria-selected:to-blue-100 dark:aria-selected:from-blue-900/30 dark:aria-selected:to-blue-800/30 aria-selected:shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                          <cmd.icon className="w-4 h-4 text-white" />
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-md group-aria-selected:scale-110 transition-transform duration-200">
+                          <cmd.icon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate group-aria-selected:text-blue-700 dark:group-aria-selected:text-blue-400">
                             {cmd.label}
                           </div>
                           {cmd.description && (
-                            <div className="text-xs text-gray-500 truncate">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                               {cmd.description}
                             </div>
                           )}
@@ -336,7 +343,10 @@ export function CommandPalette() {
                     ))}
                 </Command.Group>
 
-                <Command.Group heading="Quick Actions" className="mb-2">
+                <Command.Group heading="Thao tác nhanh" className="mb-2">
+                  <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Thao tác nhanh
+                  </div>
                   {commands
                     .filter(cmd => cmd.category === 'Quick Actions')
                     .map(cmd => (
@@ -344,17 +354,17 @@ export function CommandPalette() {
                         key={cmd.id}
                         value={cmd.label + ' ' + cmd.keywords?.join(' ')}
                         onSelect={() => handleSelect(cmd)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer aria-selected:bg-green-50 dark:aria-selected:bg-green-900/20 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex items-center gap-3 px-3 py-3 mb-1 rounded-xl cursor-pointer aria-selected:bg-gradient-to-r aria-selected:from-green-50 aria-selected:to-emerald-100 dark:aria-selected:from-green-900/30 dark:aria-selected:to-emerald-800/30 aria-selected:shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                          <cmd.icon className="w-4 h-4 text-white" />
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md group-aria-selected:scale-110 transition-transform duration-200">
+                          <cmd.icon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate group-aria-selected:text-green-700 dark:group-aria-selected:text-green-400">
                             {cmd.label}
                           </div>
                           {cmd.description && (
-                            <div className="text-xs text-gray-500 truncate">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                               {cmd.description}
                             </div>
                           )}
@@ -365,18 +375,18 @@ export function CommandPalette() {
               </Command.List>
 
               {/* Footer */}
-              <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between text-xs text-gray-500">
+              <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-800/50">
                 <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">↑↓</kbd>
-                    Navigate
+                  <span className="flex items-center gap-1.5">
+                    <kbd className="px-2 py-1 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-300 shadow-sm">↑↓</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Di chuyển</span>
                   </span>
-                  <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">Enter</kbd>
-                    Select
+                  <span className="flex items-center gap-1.5">
+                    <kbd className="px-2 py-1 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-300 shadow-sm">Enter</kbd>
+                    <span className="text-gray-600 dark:text-gray-400">Chọn</span>
                   </span>
                 </div>
-                <span>Command Palette v1.0</span>
+                <span className="text-gray-500 dark:text-gray-500 font-medium">Tìm kiếm nhanh</span>
               </div>
             </Command>
           </div>

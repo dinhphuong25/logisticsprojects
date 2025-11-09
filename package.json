@@ -36,6 +36,7 @@
     "lucide-react": "^0.552.0",
     "miragejs": "^0.1.48",
     "qrcode-generator": "^2.0.4",
+    "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.53.2",

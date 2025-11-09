@@ -88,15 +88,25 @@ export default function DashboardPageSimple() {
 
   return (
     <div className="space-y-8 p-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-cyan-50/40 dark:from-gray-900 dark:via-blue-950/20 dark:to-cyan-950/20 min-h-screen">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
-
       <div className="relative z-10 space-y-6">
-        {/* Header with Glassmorphism */}
+        {/* Action Buttons Only */}
+        <div className="flex items-center justify-end gap-3">
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefetching}
+            className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            <span className="font-semibold">Làm mới</span>
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/30 backdrop-blur-sm">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+            <span className="text-sm font-bold text-green-700 dark:text-green-400">Live Data</span>
+          </div>
+        </div>
 
 
         {/* KPI Cards with Enhanced Animations */}
@@ -340,101 +350,180 @@ export default function DashboardPageSimple() {
           </CardContent>
         </Card>
 
-      {/* Quick Actions & Recent Activity */}
+      {/* Quick Actions & Recent Activity - Enhanced */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
+        {/* Quick Actions - Premium Design */}
         <div className="lg:col-span-1">
-          <Card className="h-full">
-            <CardHeader>
+          <Card className="h-full border-0 shadow-2xl bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 dark:from-gray-900 dark:via-purple-950/30 dark:to-pink-950/30 backdrop-blur-xl overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+            <CardHeader className="relative z-10 border-b border-purple-100 dark:border-purple-900/30">
               <CardTitle className="text-xl font-bold flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-500" />
-                Thao tác nhanh
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Thao tác nhanh
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 pt-6 relative z-10">
               <Button
                 onClick={() => navigate('/inventory')}
-                className="w-full justify-between hover:scale-105 transition-transform"
-                variant="outline"
+                className="w-full justify-between group hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white border-0"
               >
-                <div className="flex items-center gap-2">
-                  <Warehouse className="w-4 h-4" />
-                  <span>Quản lý Kho</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Warehouse className="w-5 h-5" />
+                  </div>
+                  <span className="font-semibold">Quản lý tồn kho</span>
                 </div>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              
+              <Button
+                onClick={() => navigate('/inbound/create')}
+                className="w-full justify-between group hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <span className="font-semibold">Tạo phiếu nhập</span>
+                </div>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               <Button
-                onClick={() => navigate('/temperature')}
-                className="w-full justify-between hover:scale-105 transition-transform"
-                variant="outline"
+                onClick={() => navigate('/outbound/create')}
+                className="w-full justify-between group hover:shadow-lg hover:shadow-green-500/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
               >
-                <div className="flex items-center gap-2">
-                  <Thermometer className="w-4 h-4" />
-                  <span>Giám sát Nhiệt độ</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <PackageCheck className="w-5 h-5" />
+                  </div>
+                  <span className="font-semibold">Tạo phiếu xuất</span>
                 </div>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-
-              <Button
-                onClick={() => navigate('/energy')}
-                className="w-full justify-between hover:scale-105 transition-transform"
-                variant="outline"
-              >
-                <div className="flex items-center gap-2">
-                  <Sun className="w-4 h-4" />
-                  <span>Năng lượng Solar</span>
-                </div>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               <Button
                 onClick={() => navigate('/alerts')}
-                className="w-full justify-between hover:scale-105 transition-transform"
-                variant="outline"
+                className="w-full justify-between group hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0"
               >
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Xem Cảnh báo</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <span className="font-semibold">Xem cảnh báo</span>
                 </div>
-                <Badge variant="destructive" className="ml-2">{data?.kpis.openAlerts}</Badge>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+
+              <Button
+                onClick={() => navigate('/energy')}
+                className="w-full justify-between group hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Sun className="w-5 h-5" />
+                  </div>
+                  <span className="font-semibold">Quản lý năng lượng</span>
+                </div>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Activity - Premium Design */}
         <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold flex items-center gap-2">
-                <Activity className="w-5 h-5 text-blue-500" />
-                Hoạt động gần đây
-              </CardTitle>
+          <Card className="h-full border-0 shadow-2xl bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-cyan-950/30 backdrop-blur-xl overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5"></div>
+            <CardHeader className="relative z-10 border-b border-blue-100 dark:border-blue-900/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+                    <Activity className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                    Hoạt động gần đây
+                  </span>
+                </CardTitle>
+                <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
+                  {data?.recentActivity.length} hoạt động
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {data?.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:shadow-md transition-all">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      activity.status === 'success' ? 'bg-green-100 dark:bg-green-900' :
-                      activity.status === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900' :
-                      'bg-blue-100 dark:bg-blue-900'
+            <CardContent className="pt-6 relative z-10">
+              <div className="space-y-3">
+                {data?.recentActivity.map((activity, index) => (
+                  <div 
+                    key={activity.id} 
+                    className="group relative flex items-start gap-4 p-5 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Status indicator line */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${
+                      activity.status === 'success' ? 'bg-gradient-to-b from-green-500 to-emerald-500' :
+                      activity.status === 'warning' ? 'bg-gradient-to-b from-yellow-500 to-orange-500' :
+                      'bg-gradient-to-b from-blue-500 to-cyan-500'
+                    }`}></div>
+
+                    {/* Icon */}
+                    <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform ${
+                      activity.status === 'success' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
+                      activity.status === 'warning' ? 'bg-gradient-to-br from-yellow-500 to-orange-500' :
+                      'bg-gradient-to-br from-blue-500 to-cyan-500'
                     }`}>
-                      {activity.type === 'inbound' && <Package className="w-5 h-5 text-green-600 dark:text-green-400" />}
-                      {activity.type === 'outbound' && <PackageCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
-                      {activity.type === 'alert' && <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />}
+                      <div className="absolute inset-0 bg-white/20 rounded-xl animate-pulse"></div>
+                      {activity.type === 'inbound' && <Package className="w-6 h-6 text-white relative z-10" />}
+                      {activity.type === 'outbound' && <PackageCheck className="w-6 h-6 text-white relative z-10" />}
+                      {activity.type === 'alert' && <AlertTriangle className="w-6 h-6 text-white relative z-10" />}
                     </div>
+
+                    {/* Content */}
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white">{activity.message}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <Clock className="w-3 h-3 inline mr-1" />
-                        {activity.time}
-                      </p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-bold text-gray-900 dark:text-white text-base leading-tight">
+                          {activity.message}
+                        </p>
+                        <Badge className={`shrink-0 ${
+                          activity.status === 'success' ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700' :
+                          activity.status === 'warning' ? 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700' :
+                          'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
+                        }`}>
+                          {activity.status === 'success' ? '✓ Thành công' :
+                           activity.status === 'warning' ? '⚠ Cảnh báo' :
+                           'ℹ Đang xử lý'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 px-3 py-1 rounded-lg">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="font-medium">{activity.time}</span>
+                        </div>
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                          activity.status === 'success' ? 'bg-green-500' :
+                          activity.status === 'warning' ? 'bg-yellow-500' :
+                          'bg-blue-500'
+                        }`}></div>
+                      </div>
                     </div>
+
+                    {/* Hover arrow */}
+                    <ArrowRight className="w-5 h-5 text-gray-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                   </div>
                 ))}
               </div>
+
+              {/* View All button */}
+              <Button 
+                variant="outline" 
+                className="w-full mt-6 group hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-500 hover:text-white hover:border-transparent transition-all duration-300"
+              >
+                <span>Xem tất cả hoạt động</span>
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </CardContent>
           </Card>
         </div>

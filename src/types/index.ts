@@ -63,7 +63,7 @@ export interface Product {
   imageUrl?: string;
 }
 
-export type TempClass = "CHILL" | "FROZEN";
+export type TempClass = "CHILL" | "FROZEN" | "DRY" | "AMBIENT";
 
 // Lô hàng
 export interface Lot {

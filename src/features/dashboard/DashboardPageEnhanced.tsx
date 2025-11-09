@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/ui/stat-card'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Modal } from '@/components/ui/modal'
 import {
   Package,
   PackageCheck,
@@ -29,6 +30,9 @@ import {
   Users,
   Truck,
   ArrowDown,
+  MapPin,
+  User,
+  FileText,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -41,6 +45,27 @@ interface KPIData {
   activeOrders: number
   revenue: number
   efficiency: number
+}
+
+interface ActivityItem {
+  id: string
+  type: 'inbound' | 'outbound' | 'temperature' | 'staff' | 'alert'
+  icon: React.ElementType
+  color: string
+  bg: string
+  text: string
+  time: string
+  details: {
+    orderId?: string
+    status?: string
+    location?: string
+    operator?: string
+    items?: number
+    temperature?: number
+    zone?: string
+    description?: string
+    priority?: 'low' | 'medium' | 'high'
+  }
 }
 
 interface SolarData {
@@ -58,6 +83,91 @@ export default function DashboardPageEnhanced() {
   const navigate = useNavigate()
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today')
   const [refreshing, setRefreshing] = useState(false)
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null)
+
+  // Mock activities data with full details
+  const recentActivities: ActivityItem[] = [
+    { 
+      id: 'IB-00234',
+      type: 'inbound',
+      icon: Package, 
+      color: 'text-green-600', 
+      bg: 'bg-green-100 dark:bg-green-900/30', 
+      text: 'Đơn hàng IB-00234 đã hoàn thành',
+      time: '5 phút',
+      details: {
+        orderId: 'IB-00234',
+        status: 'Hoàn thành',
+        location: 'Kho A - Zone CHILL-A',
+        operator: 'Nguyễn Văn An',
+        items: 150,
+        description: 'Nhập hàng rau củ tươi từ nhà cung cấp Đà Lạt Fresh'
+      }
+    },
+    { 
+      id: 'TEMP-001',
+      type: 'temperature',
+      icon: Thermometer, 
+      color: 'text-orange-600', 
+      bg: 'bg-orange-100 dark:bg-orange-900/30', 
+      text: 'Cảnh báo nhiệt độ Zone CHILL-A',
+      time: '12 phút',
+      details: {
+        zone: 'Zone CHILL-A',
+        temperature: 8.5,
+        status: 'Cảnh báo',
+        description: 'Nhiệt độ vượt ngưỡng cho phép (2-8°C)',
+        priority: 'high' as const
+      }
+    },
+    { 
+      id: 'OB-00156',
+      type: 'outbound',
+      icon: Truck, 
+      color: 'text-blue-600', 
+      bg: 'bg-blue-100 dark:bg-blue-900/30', 
+      text: 'Đang xuất hàng OB-00156',
+      time: '25 phút',
+      details: {
+        orderId: 'OB-00156',
+        status: 'Đang xử lý',
+        location: 'Kho B - Zone FROZEN-B',
+        operator: 'Trần Thị Bình',
+        items: 80,
+        description: 'Xuất hàng đông lạnh cho đơn hàng siêu thị CoopMart'
+      }
+    },
+    { 
+      id: 'STAFF-001',
+      type: 'staff',
+      icon: Users, 
+      color: 'text-purple-600', 
+      bg: 'bg-purple-100 dark:bg-purple-900/30', 
+      text: 'Ca làm việc - 3 người',
+      time: '1 giờ',
+      details: {
+        status: 'Đang hoạt động',
+        operator: '3 nhân viên',
+        description: 'Ca sáng: Nguyễn Văn An, Trần Thị Bình, Lê Văn Cường',
+        location: 'Khu vực kho A, B'
+      }
+    },
+    { 
+      id: 'ALERT-001',
+      type: 'alert',
+      icon: AlertTriangle, 
+      color: 'text-red-600', 
+      bg: 'bg-red-100 dark:bg-red-900/30', 
+      text: 'Cảnh báo tồn kho thấp',
+      time: '2 giờ',
+      details: {
+        status: 'Cần xử lý',
+        description: 'Sản phẩm XYZ-001 còn lại 15 đơn vị, dưới mức tối thiểu',
+        priority: 'medium' as const,
+        location: 'Kho A - Zone CHILL-B'
+      }
+    },
+  ]
 
   const { data: kpis, refetch, isLoading: kpisLoading } = useQuery<KPIData>({
     queryKey: ['kpis'],
@@ -450,31 +560,33 @@ export default function DashboardPageEnhanced() {
             <CardTitle className="flex items-center gap-2">
               <Activity className="w-6 h-6 text-purple-600" />
               Hoạt động gần đây
+              <span className="ml-auto text-sm font-normal text-gray-500">
+                {recentActivities.length} hoạt động
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { icon: Package, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'Đơn nhập IB-001 đã nhận', time: '2 phút' },
-                { icon: Truck, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30', text: 'Đơn xuất OB-045 đã gửi', time: '15 phút' },
-                { icon: Thermometer, color: 'text-cyan-600', bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'Kiểm tra nhiệt độ OK', time: '30 phút' },
-                { icon: Users, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'Ca làm việc - 3 người', time: '1 giờ' },
-                { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'Cảnh báo tồn thấp', time: '2 giờ' },
-              ].map((activity, index) => {
+              {recentActivities.map((activity) => {
                 const Icon = activity.icon
                 return (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all cursor-pointer hover:scale-105">
-                    <div className={`w-11 h-11 rounded-xl ${activity.bg} flex items-center justify-center shrink-0 shadow-md`}>
+                  <div 
+                    key={activity.id} 
+                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all cursor-pointer hover:scale-[1.02] hover:shadow-md group"
+                    onClick={() => setSelectedActivity(activity)}
+                  >
+                    <div className={`w-11 h-11 rounded-xl ${activity.bg} flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform`}>
                       <Icon className={`w-5 h-5 ${activity.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {activity.text}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
                         🕐 {activity.time} trước
                       </p>
                     </div>
+                    <Eye className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 )
               })}
@@ -482,6 +594,177 @@ export default function DashboardPageEnhanced() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Activity Detail Modal */}
+      {selectedActivity && (
+        <Modal
+          isOpen={!!selectedActivity}
+          onClose={() => setSelectedActivity(null)}
+          title="Chi tiết hoạt động"
+          size="xl"
+        >
+          <div className="space-y-6">
+            {/* Header with Icon */}
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
+              <div className={`w-16 h-16 rounded-2xl ${selectedActivity.bg} flex items-center justify-center shadow-lg`}>
+                <selectedActivity.icon className={`w-8 h-8 ${selectedActivity.color}`} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  {selectedActivity.text}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  🕐 {selectedActivity.time} trước
+                </p>
+              </div>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {selectedActivity.details.orderId && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <FileText className="w-4 h-4" />
+                    <span className="font-medium">Mã đơn hàng</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.orderId}
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.status && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <Activity className="w-4 h-4" />
+                    <span className="font-medium">Trạng thái</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.status}
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.location && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <MapPin className="w-4 h-4" />
+                    <span className="font-medium">Vị trí</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.location}
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.operator && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">Người thực hiện</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.operator}
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.items && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <Package className="w-4 h-4" />
+                    <span className="font-medium">Số lượng</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.items} đơn vị
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.temperature && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <Thermometer className="w-4 h-4" />
+                    <span className="font-medium">Nhiệt độ</span>
+                  </div>
+                  <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                    {selectedActivity.details.temperature}°C
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.zone && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <MapPin className="w-4 h-4" />
+                    <span className="font-medium">Khu vực</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {selectedActivity.details.zone}
+                  </p>
+                </div>
+              )}
+
+              {selectedActivity.details.priority && (
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="font-medium">Mức độ ưu tiên</span>
+                  </div>
+                  <p className={`text-lg font-bold ${
+                    selectedActivity.details.priority === 'high' ? 'text-red-600' :
+                    selectedActivity.details.priority === 'medium' ? 'text-orange-600' :
+                    'text-green-600'
+                  }`}>
+                    {selectedActivity.details.priority === 'high' ? 'Cao' :
+                     selectedActivity.details.priority === 'medium' ? 'Trung bình' :
+                     'Thấp'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            {selectedActivity.details.description && (
+              <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 mb-2">
+                  <FileText className="w-4 h-4" />
+                  <span className="font-semibold">Mô tả chi tiết</span>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {selectedActivity.details.description}
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              {selectedActivity.details.orderId && (
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    if (selectedActivity.type === 'inbound') {
+                      navigate('/inbound')
+                    } else if (selectedActivity.type === 'outbound') {
+                      navigate('/outbound')
+                    }
+                    setSelectedActivity(null)
+                  }}
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Xem chi tiết đơn hàng
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setSelectedActivity(null)}
+              >
+                Đóng
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

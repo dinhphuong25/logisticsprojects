@@ -21,8 +21,10 @@ import ReportsPage from './features/reports/ReportsPageSimple'
 import SettingsPage from './features/settings/SettingsPage'
 import ZoneManagementPage from './features/zones/ZoneManagementPageSimple'
 import LocationManagementPage from './features/locations/LocationManagementPage'
-import ProductManagementPage from './features/products/ProductsPageSimple'
-import CreateProductPage from './features/products/CreateProductPage'
+import { ProductListPage } from './features/products/ProductListPage'
+import { ProductReportPage } from './features/products/ProductReportPage'
+import { SimpleProductList } from './features/products/SimpleProductList'
+import { CreateProductPage } from './features/products/CreateProductPage'
 import ProductDetailPage from './features/products/ProductDetailPage'
 import EditProductPage from './features/products/EditProductPage'
 import EnergyManagementPage from './features/energy/EnergyManagementPageSimple'
@@ -57,7 +59,7 @@ function AppContainer() {
 
   return (
     <>
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <Routes location={location} key={location.pathname}>
           <Route
             path="/login"
@@ -186,7 +188,23 @@ function AppContainer() {
               path="/products"
               element={
                 <AnimatedPage>
-                  <ProductManagementPage />
+                  <ProductListPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products/report"
+              element={
+                <AnimatedPage>
+                  <ProductReportPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/products/simple"
+              element={
+                <AnimatedPage>
+                  <SimpleProductList />
                 </AnimatedPage>
               }
             />

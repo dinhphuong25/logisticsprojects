@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/uiStore'
 import {
@@ -9,7 +9,6 @@ import {
   Snowflake,
   PackageOpen,
   PackageCheck,
-  Box,
   BarChart3,
   MapPin,
   Grid3x3,
@@ -18,9 +17,7 @@ import {
   Sun,
   Shield,
   Radio,
-  Sprout,
   Cloud,
-  Ship,
   Zap,
   Fuel,
 } from 'lucide-react'
@@ -32,13 +29,6 @@ const navItems = [
     label: 'Bảng điều khiển',
     category: 'main',
     gradient: 'from-blue-500 to-cyan-500'
-  },
-  { 
-    to: '/warehouse-3d', 
-    icon: Box, 
-    label: 'Kho 3D',
-    category: 'main',
-    gradient: 'from-purple-500 to-pink-500'
   },
   { 
     to: '/zones', 
@@ -83,6 +73,29 @@ const navItems = [
     gradient: 'from-green-500 to-emerald-500'
   },
   { 
+    to: '/blockchain', 
+    icon: Shield, 
+    label: 'Blockchain',
+    category: 'system',
+    gradient: 'from-blue-600 to-indigo-600',
+    isSpecial: true,
+    badge: 'NEW'
+  },
+  { 
+    to: '/weather', 
+    icon: Cloud, 
+    label: 'Thời Tiết',
+    category: 'agriculture',
+    gradient: 'from-blue-500 to-cyan-500'
+  },
+  { 
+    to: '/temperature', 
+    icon: Thermometer, 
+    label: 'Nhiệt độ',
+    category: 'monitoring',
+    gradient: 'from-cyan-500 to-blue-500'
+  },
+  { 
     to: '/energy', 
     icon: Sun, 
     label: 'Năng lượng mặt trời',
@@ -110,13 +123,6 @@ const navItems = [
     badge: 'HOT'
   },
   { 
-    to: '/temperature', 
-    icon: Thermometer, 
-    label: 'Nhiệt độ',
-    category: 'monitoring',
-    gradient: 'from-cyan-500 to-blue-500'
-  },
-  { 
     to: '/alerts', 
     icon: AlertTriangle, 
     label: 'Cảnh báo',
@@ -137,45 +143,23 @@ const navItems = [
     category: 'system',
     gradient: 'from-gray-500 to-slate-500'
   },
-  { 
-    to: '/blockchain', 
-    icon: Shield, 
-    label: 'Blockchain',
-    category: 'system',
-    gradient: 'from-blue-600 to-indigo-600',
-    isSpecial: true,
-    badge: 'NEW'
-  },
-  { 
-    to: '/agriculture', 
-    icon: Sprout, 
-    label: 'Nông Sản ĐBSCL',
-    category: 'agriculture',
-    gradient: 'from-green-600 to-emerald-600',
-    isSpecial: true,
-    badge: 'HOT'
-  },
-  { 
-    to: '/weather', 
-    icon: Cloud, 
-    label: 'Thời Tiết',
-    category: 'agriculture',
-    gradient: 'from-blue-500 to-cyan-500'
-  },
-  { 
-    to: '/transportation', 
-    icon: Ship, 
-    label: 'Vận Tải ĐBSCL',
-    category: 'agriculture',
-    gradient: 'from-indigo-500 to-blue-600'
-  },
 ]
 
 export default function Sidebar() {
   const { sidebarCollapsed, setSidebarCollapsed } = useUIStore()
+  const navigate = useNavigate()
 
   // Auto close sidebar on mobile when clicking nav item
-  const handleNavClick = () => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    e.preventDefault()
+    
+    // Navigate without triggering scroll
+    navigate(path, { 
+      replace: false,
+      preventScrollReset: true,
+      state: { preventScroll: true }
+    })
+    
     if (window.innerWidth < 1024) { // lg breakpoint
       setSidebarCollapsed(true)
     }
@@ -184,9 +168,10 @@ export default function Sidebar() {
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-0 h-screen bg-gradient-to-b from-white/95 via-white/90 to-white/95 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-gray-900/95 backdrop-blur-2xl border-r border-white/20 dark:border-gray-700/30 z-40 shadow-2xl shadow-blue-500/10 transition-all duration-300",
+        "fixed left-0 top-0 h-screen bg-gradient-to-b from-white/95 via-white/90 to-white/95 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-gray-900/95 backdrop-blur-2xl border-r border-white/20 dark:border-gray-700/30 z-40 shadow-2xl shadow-blue-500/10 transition-all duration-300 overscroll-none",
         sidebarCollapsed ? "-translate-x-full lg:translate-x-0 lg:w-16" : "w-56 translate-x-0"
       )}
+      style={{ scrollBehavior: 'auto' }}
     >
       
       {/* Animated Background */}
@@ -218,7 +203,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <nav className="relative z-10 p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth">
         {navItems.map((item, index) => {
           const isEnergyMenu = item.category === 'energy'
           
@@ -226,7 +211,8 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
-              onClick={handleNavClick}
+              onClick={(e) => handleNavClick(e, item.to)}
+              preventScrollReset={true}
               className={({ isActive }) =>
                 cn(
                   'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 hover:shadow-md',

@@ -104,15 +104,12 @@ export class BlockchainService {
     error?: string
   }> {
     try {
-      // In real implementation, would query blockchain
-      // For demo, simulate verification
-      const isValid = productId.length === 16 && /^[A-F0-9]+$/.test(productId)
-      
-      if (!isValid) {
+      // Support multiple ID formats
+      if (!productId || productId.trim().length === 0) {
         return { verified: false, error: 'Invalid product ID format' }
       }
 
-      // Mock successful verification
+      // Mock successful verification for any non-empty ID
       return {
         verified: true,
         product: await this.getMockProductData(productId)
@@ -187,27 +184,58 @@ export class BlockchainService {
 
   // Mock product data for demo
   private async getMockProductData(productId: string): Promise<BlockchainProduct> {
+    // Generate product info based on ID
+    const isFruit = productId.toUpperCase().includes('FRUIT')
+    const isDairy = productId.toUpperCase().includes('DAIRY') || productId.toUpperCase().includes('MILK')
+    const isMeat = productId.toUpperCase().includes('MEAT') || productId.toUpperCase().includes('BEEF')
+    
+    let productInfo = {
+      name: 'Sản phẩm lạnh',
+      category: 'Cold Chain',
+      certifications: ['HACCP', 'ISO 22000']
+    }
+
+    if (isFruit) {
+      productInfo = {
+        name: 'Trái cây tươi nhập khẩu',
+        category: 'Fresh Fruits',
+        certifications: ['GlobalGAP', 'Organic', 'VietGAP']
+      }
+    } else if (isDairy) {
+      productInfo = {
+        name: 'Sữa tươi Vinamilk',
+        category: 'Dairy Products',
+        certifications: ['HACCP', 'ISO 22000', 'Organic']
+      }
+    } else if (isMeat) {
+      productInfo = {
+        name: 'Thịt bò Úc đông lạnh',
+        category: 'Frozen Meat',
+        certifications: ['HACCP', 'Halal', 'ISO 22000']
+      }
+    }
+
     return {
       id: productId,
-      name: 'Sữa tươi Vinamilk',
-      category: 'Dairy',
-      manufacturer: 'Vinamilk Co., Ltd',
-      batchNumber: 'VNM-' + productId.substring(0, 8),
+      name: productInfo.name,
+      category: productInfo.category,
+      manufacturer: 'EcoFresh Cold Chain Co., Ltd',
+      batchNumber: 'BATCH-' + productId.substring(0, 8).toUpperCase(),
       productionDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
       expiryDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
       temperature: {
-        min: 2,
-        max: 6,
-        current: 4
+        min: isMeat ? -18 : (isFruit ? 2 : 2),
+        max: isMeat ? -15 : (isFruit ? 8 : 6),
+        current: isMeat ? -16 : (isFruit ? 5 : 4)
       },
       location: {
         latitude: 21.0285,
         longitude: 105.8542,
-        address: 'Hà Nội, Việt Nam'
+        address: 'Kho lạnh Đông Anh, Hà Nội, Việt Nam'
       },
-      certifications: ['HACCP', 'ISO 22000', 'Organic'],
+      certifications: productInfo.certifications,
       blockchain: {
-        transactionHash: '0x' + CryptoJS.SHA256(productId + 'blockchain').toString(),
+        transactionHash: '0x' + CryptoJS.SHA256(productId + 'blockchain' + Date.now()).toString(),
         blockNumber: Math.floor(Math.random() * 1000000) + 15000000,
         timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000,
         verified: true
