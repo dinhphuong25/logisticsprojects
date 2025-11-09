@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import {
   Brain, TrendingUp, Target, Zap, AlertTriangle, CheckCircle,
-  Sparkles, BarChart3, Activity, DollarSign, Package, RefreshCw,
-  Lightbulb, Rocket, Shield, Cpu, Eye, ArrowRight, Star, 
-  ThumbsUp, Clock, Award, MessageSquare
+  Sparkles, Activity, RefreshCw,
+  Lightbulb, Rocket, ArrowRight, Star, 
+  ThumbsUp, Award, MessageSquare
 } from 'lucide-react'
-import { AIEngine, AIInsight, SmartRecommendation } from '@/lib/ai-engine'
+import { AIEngine } from '@/lib/ai-engine'
+import type { AIInsight, SmartRecommendation } from '@/lib/ai-engine'
 import { useProductStore } from '@/stores/productStore'
-import { apiClient } from '@/lib/api-client'
 
 export default function SmartAnalyticsDashboard() {
   const { products } = useProductStore()
@@ -23,11 +23,7 @@ export default function SmartAnalyticsDashboard() {
   const [selectedInsight, setSelectedInsight] = useState<AIInsight | null>(null)
 
   // Load AI Insights
-  useEffect(() => {
-    loadAIInsights()
-  }, [products])
-
-  const loadAIInsights = async () => {
+  const loadAIInsights = useCallback(async () => {
     setIsAnalyzing(true)
     try {
       // Simulate API call
@@ -52,7 +48,11 @@ export default function SmartAnalyticsDashboard() {
     } finally {
       setIsAnalyzing(false)
     }
-  }
+  }, [products])
+
+  useEffect(() => {
+    loadAIInsights()
+  }, [loadAIInsights])
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -417,7 +417,18 @@ export default function SmartAnalyticsDashboard() {
               )}
 
               <div className="flex gap-3 pt-4 border-t">
-                <Button className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  onClick={() => {
+                    if (selectedInsight) {
+                      toast.success(`✅ Đã thực hiện: ${selectedInsight.title}`, {
+                        description: selectedInsight.suggestedActions?.[0] || 'Đang xử lý hành động...',
+                        duration: 4000,
+                      })
+                      setSelectedInsight(null)
+                    }
+                  }}
+                >
                   <ThumbsUp className="w-4 h-4 mr-2" />
                   Thực hiện ngay
                 </Button>
