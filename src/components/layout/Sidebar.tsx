@@ -20,6 +20,7 @@ import {
   Cloud,
   Zap,
   Fuel,
+  Brain,
 } from 'lucide-react'
 
 const navItems = [
@@ -29,6 +30,15 @@ const navItems = [
     label: 'Bảng điều khiển',
     category: 'main',
     gradient: 'from-blue-500 to-cyan-500'
+  },
+  { 
+    to: '/analytics', 
+    icon: Brain, 
+    label: 'AI Analytics',
+    category: 'main',
+    gradient: 'from-purple-600 to-pink-600',
+    isSpecial: true,
+    badge: 'AI'
   },
   { 
     to: '/zones', 

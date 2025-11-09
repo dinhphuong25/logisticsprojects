@@ -35,6 +35,7 @@ import { BlockchainProductRegistration } from './features/blockchain/BlockchainP
 import { MekongDeltaAgricultureDashboard } from './features/agriculture/MekongDeltaAgricultureDashboard'
 import { MekongDeltaWeatherMonitoring } from './features/agriculture/MekongDeltaWeatherMonitoring'
 import { MekongDeltaTransportationHub } from './features/agriculture/MekongDeltaTransportationHub'
+import SmartAnalyticsDashboard from './features/dashboard/SmartAnalyticsDashboard'
 
 function App() {
   return (
@@ -85,6 +86,14 @@ function AppContainer() {
               element={
                 <AnimatedPage>
                   <DashboardPage />
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <AnimatedPage>
+                  <SmartAnalyticsDashboard />
                 </AnimatedPage>
               }
             />
