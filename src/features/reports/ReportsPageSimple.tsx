@@ -29,6 +29,14 @@ import { toast } from 'sonner'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
+// Extend jsPDF type for autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: unknown) => jsPDF
+    lastAutoTable: { finalY: number }
+  }
+}
+
 interface Report {
   id: string
   name: string
@@ -372,7 +380,6 @@ export default function ReportsPageSimple() {
       // Add table based on report type
       const tableData = generateTableData(report.type)
       
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [tableData.headers],
@@ -392,9 +399,9 @@ export default function ReportsPageSimple() {
         }
       })
       
-      // Footer
-      // @ts-expect-error - jspdf-autotable finalY property
-      const finalY = doc.lastAutoTable.finalY || yPos + 50
+  // Footer
+  // Use optional chaining in case autoTable didn't populate lastAutoTable
+  const finalY = doc.lastAutoTable?.finalY ?? (yPos + 50)
       doc.setFontSize(8)
       doc.setTextColor(156, 163, 175)
       doc.text('Bao cao duoc tao tu He thong Quan ly Kho Lanh', 15, finalY + 15)
@@ -544,6 +551,167 @@ export default function ReportsPageSimple() {
     toast.success('Báo cáo sẽ được gửi qua email')
   }
 
+  const handleGenerateReport = () => {
+    toast.loading('Đang tạo báo cáo...', { id: 'generate-report' })
+    
+    try {
+      // Create a new comprehensive report
+      const doc = new jsPDF()
+      const pageWidth = doc.internal.pageSize.getWidth()
+      
+      // Header with gradient effect (simulated with color)
+      doc.setFontSize(24)
+      doc.setTextColor(99, 102, 241) // Indigo
+      doc.text('BAO CAO TONG QUAN', pageWidth / 2, 20, { align: 'center' })
+      
+      doc.setFontSize(12)
+      doc.setTextColor(107, 114, 128) // Gray
+      doc.text('He thong Quan ly Kho Lanh EcoFresh', pageWidth / 2, 30, { align: 'center' })
+      doc.text(`Ngay tao: ${new Date().toLocaleDateString('vi-VN')}`, pageWidth / 2, 37, { align: 'center' })
+      doc.text(`Thoi gian: ${new Date().toLocaleTimeString('vi-VN')}`, pageWidth / 2, 44, { align: 'center' })
+      
+      // Divider
+      doc.setDrawColor(99, 102, 241)
+      doc.setLineWidth(0.5)
+      doc.line(15, 50, pageWidth - 15, 50)
+      
+      // Period selection info
+      doc.setFontSize(11)
+      doc.setTextColor(0, 0, 0)
+      doc.text(`Khoang thoi gian: ${selectedPeriod === 'today' ? 'Hom nay' : selectedPeriod === 'week' ? 'Tuan nay' : selectedPeriod === 'month' ? 'Thang nay' : selectedPeriod === 'quarter' ? 'Quy nay' : 'Nam nay'}`, 15, 58)
+      
+      // Statistics Summary
+      doc.setFontSize(14)
+      doc.setTextColor(99, 102, 241)
+      doc.text('TONG QUAN HOAT DONG', 15, 70)
+      
+      const summaryData = [
+        ['Chi tieu', 'Gia tri', 'Trang thai'],
+        ['Tong so bao cao', stats.total.toString(), 'Hoan tat'],
+        ['Bao cao san sang', stats.ready.toString(), 'Khong co loi'],
+        ['Thoi gian trung binh', `${stats.avgTime}s`, 'Tot'],
+        ['Luot tai xuong', stats.downloads.toString(), 'Cao']
+      ]
+      
+      doc.autoTable({
+        startY: 75,
+        head: [summaryData[0]],
+        body: summaryData.slice(1),
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [99, 102, 241], 
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        styles: { 
+          fontSize: 9,
+          cellPadding: 4
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251]
+        }
+      })
+      
+  // Report Types Overview
+  // Guard access to lastAutoTable
+  let finalY = (doc.lastAutoTable?.finalY ?? 75) + 15
+      doc.setFontSize(14)
+      doc.setTextColor(99, 102, 241)
+      doc.text('PHAN LOAI BAO CAO', 15, finalY)
+      
+      const typeData = [
+        ['Loai bao cao', 'So luong', 'Mo ta'],
+        ['Ton kho', '3', 'Phan tich muc ton kho va gia tri'],
+        ['Nhap hang', '2', 'Hieu suat tiep nhan hang hoa'],
+        ['Xuat hang', '2', 'Chi so picking va giao hang'],
+        ['Nhiet do', '1', 'Giam sat nhiet do kho lanh'],
+        ['Nang luong', '1', 'San luong dien mat troi'],
+        ['Tai chinh', '1', 'Doanh thu va chi phi']
+      ]
+      
+      doc.autoTable({
+        startY: finalY + 5,
+        head: [typeData[0]],
+        body: typeData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [139, 92, 246], // Purple
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        styles: { 
+          fontSize: 9,
+          cellPadding: 4
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251]
+        }
+      })
+      
+  // Performance Metrics
+  finalY = (doc.lastAutoTable?.finalY ?? finalY) + 15
+      doc.setFontSize(14)
+      doc.setTextColor(99, 102, 241)
+      doc.text('CHI SO HIEU SUAT', 15, finalY)
+      
+      const performanceData = [
+        ['Chi tieu', 'Gia tri', 'Danh gia'],
+        ['Ty le tao bao cao thanh cong', '98.5%', 'Xuat sac'],
+        ['Thoi gian xu ly trung binh', '2.3s', 'Tot'],
+        ['Do chinh xac du lieu', '99.2%', 'Xuat sac'],
+        ['Ty le tai lai thanh cong', '100%', 'Hoan hao']
+      ]
+      
+      doc.autoTable({
+        startY: finalY + 5,
+        head: [performanceData[0]],
+        body: performanceData.slice(1),
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [16, 185, 129], // Green
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        styles: { 
+          fontSize: 9,
+          cellPadding: 4
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251]
+        }
+      })
+      
+  // Footer
+  finalY = (doc.lastAutoTable?.finalY ?? finalY) + 20
+      doc.setFontSize(8)
+      doc.setTextColor(156, 163, 175)
+      doc.text('© 2025 EcoFresh Cold Chain WMS - He thong quan ly kho lanh', pageWidth / 2, finalY, { align: 'center' })
+      doc.text('Website: ecofresh.com | Email: contact@ecofresh.com | Tel: +84 123 456 789', pageWidth / 2, finalY + 5, { align: 'center' })
+      
+      // Save the PDF
+      const fileName = `bao-cao-tong-quan-${new Date().toISOString().split('T')[0]}.pdf`
+      doc.save(fileName)
+      
+      toast.success('Đã tạo và tải xuống báo cáo thành công!', { 
+        id: 'generate-report',
+        description: `File: ${fileName}`,
+        duration: 4000
+      })
+      
+    } catch (error) {
+      console.error('Error generating report:', error)
+      const msg = error instanceof Error ? error.message : String(error)
+      toast.error('Không thể tạo báo cáo', { 
+        id: 'generate-report',
+        description: msg || 'Vui lòng thử lại sau',
+        duration: 5000
+      })
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -570,7 +738,11 @@ export default function ReportsPageSimple() {
             <Calendar className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
             <span className="hidden sm:inline">Lên lịch</span>
           </Button>
-          <Button size="sm" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shrink-0 text-xs md:text-sm">
+          <Button 
+            onClick={handleGenerateReport}
+            size="sm" 
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shrink-0 text-xs md:text-sm"
+          >
             <FileText className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
             <span className="hidden sm:inline">Tạo báo cáo</span>
             <span className="sm:hidden">Tạo</span>

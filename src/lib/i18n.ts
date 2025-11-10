@@ -18,6 +18,22 @@ const resources = {
       "nav.settings": "Settings",
       "nav.audit": "Audit Log",
 
+      // Dashboard
+      "dashboard.title": "Dashboard",
+      "dashboard.todayRevenue": "Today's Revenue",
+      "dashboard.orders": "Orders",
+      "dashboard.inventory": "Inventory Value",
+      "dashboard.alerts": "Alerts",
+      "dashboard.fulfillmentRate": "Fulfillment Rate",
+      "dashboard.onTimeDelivery": "On-time Delivery",
+      "dashboard.accuracy": "Accuracy",
+      "dashboard.efficiency": "Efficiency",
+      "dashboard.revenueTrend": "Revenue Trend (7 Days)",
+      "dashboard.orderDistribution": "Order Distribution",
+      "dashboard.categories": "Categories",
+      "dashboard.inStock": "In Stock",
+      "dashboard.concerns": "Concerns",
+      
       // KPIs
       "kpi.inboundToday": "Inbound Today",
       "kpi.outboundToday": "Outbound Today",
@@ -25,6 +41,7 @@ const resources = {
       "kpi.onHandFrozen": "On Hand (Frozen)",
       "kpi.openAlerts": "Open Alerts",
       "kpi.dockOnTime": "Dock On-Time %",
+      "kpi.target": "Target",
 
       // Common
       "common.search": "Search",
@@ -44,6 +61,9 @@ const resources = {
       "common.error": "Error",
       "common.confirm": "Confirm",
       "common.close": "Close",
+      "common.of": "of",
+      "common.products": "products",
+      "common.items": "items",
 
       // Auth
       "auth.login": "Login",
@@ -60,6 +80,9 @@ const resources = {
       "status.receiving": "Receiving",
       "status.picking": "Picking",
       "status.shipped": "Shipped",
+      "status.active": "Active",
+      "status.online": "Online",
+      "status.offline": "Offline",
 
       // Temperature
       "temp.current": "Current",
@@ -87,6 +110,22 @@ const resources = {
       "nav.settings": "Cài đặt",
       "nav.audit": "Nhật ký",
 
+      // Dashboard
+      "dashboard.title": "Bảng điều khiển",
+      "dashboard.todayRevenue": "Doanh thu hôm nay",
+      "dashboard.orders": "Đơn hàng",
+      "dashboard.inventory": "Giá trị tồn kho",
+      "dashboard.alerts": "Cảnh báo",
+      "dashboard.fulfillmentRate": "Tỷ lệ hoàn thành",
+      "dashboard.onTimeDelivery": "Giao hàng đúng hạn",
+      "dashboard.accuracy": "Độ chính xác",
+      "dashboard.efficiency": "Hiệu suất",
+      "dashboard.revenueTrend": "xu hướng doanh thu (7 ngày)",
+      "dashboard.orderDistribution": "Phân bố đơn hàng",
+      "dashboard.categories": "danh mục",
+      "dashboard.inStock": "Còn hàng",
+      "dashboard.concerns": "Quan trọng",
+      
       // KPIs
       "kpi.inboundToday": "Nhập hôm nay",
       "kpi.outboundToday": "Xuất hôm nay",
@@ -94,6 +133,7 @@ const resources = {
       "kpi.onHandFrozen": "Tồn kho đông",
       "kpi.openAlerts": "Cảnh báo",
       "kpi.dockOnTime": "Dock đúng giờ",
+      "kpi.target": "Mục tiêu",
 
       // Common
       "common.search": "Tìm kiếm",
@@ -113,6 +153,9 @@ const resources = {
       "common.error": "Lỗi",
       "common.confirm": "Xác nhận",
       "common.close": "Đóng",
+      "common.of": "của",
+      "common.products": "sản phẩm",
+      "common.items": "mục",
 
       // Auth
       "auth.login": "Đăng nhập",
@@ -129,6 +172,9 @@ const resources = {
       "status.receiving": "Đang nhận",
       "status.picking": "Đang lấy",
       "status.shipped": "Đã xuất",
+      "status.active": "Hoạt động",
+      "status.online": "Trực tuyến",
+      "status.offline": "Ngoại tuyến",
 
       // Temperature
       "temp.current": "Hiện tại",

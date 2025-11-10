@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Cold Chain WMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .cloud {
+            width: 100%;
+            height: 60px;
+            background: #e0e7ff;
+            border-radius: 100px;
+            position: relative;
+        }
+        
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background: #e0e7ff;
+            border-radius: 50%;
+        }
+        
+        .cloud:before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+        
+        .cloud:after {
+            width: 70px;
+            height: 70px;
+            top: -35px;
+            right: 10px;
+        }
+        
+        .slash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            width: 4px;
+            height: 100px;
+            background: #ef4444;
+            border-radius: 2px;
+        }
+        
+        h1 {
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            color: #6b7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .status {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <div class="cloud"></div>
+            <div class="slash"></div>
+        </div>
+        
+        <h1>Bạn đang ngoại tuyến</h1>
+        <p>
+            Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn và thử lại.
+        </p>
+        
+        <a href="/" class="button" onclick="window.location.reload(); return false;">
+            Thử lại
+        </a>
+        
+        <div class="status">
+            <div class="status-item">
+                <div class="dot"></div>
+                <span id="status-text">Đang kiểm tra kết nối...</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status periodically
+        function checkConnection() {
+            const statusText = document.getElementById('status-text');
+            
+            if (navigator.onLine) {
+                statusText.textContent = 'Đã kết nối! Nhấn "Thử lại" để tiếp tục.';
+                document.querySelector('.dot').style.background = '#10b981';
+            } else {
+                statusText.textContent = 'Không có kết nối internet';
+                document.querySelector('.dot').style.background = '#ef4444';
+            }
+        }
+        
+        // Check immediately and every 3 seconds
+        checkConnection();
+        setInterval(checkConnection, 3000);
+        
+        // Listen for online event
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

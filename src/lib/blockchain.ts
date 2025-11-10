@@ -114,7 +114,7 @@ export class BlockchainService {
         verified: true,
         product: await this.getMockProductData(productId)
       }
-    } catch (error) {
+    } catch {
       return { verified: false, error: 'Verification failed' }
     }
   }

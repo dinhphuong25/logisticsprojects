@@ -29,7 +29,7 @@ export function makeServer() {
       server.create('user', {
         id: 'user-1',
         email: 'admin@wms.com',
-        password: 'password',
+        password: '12345678',
         name: 'Đình Phương',
         nameVi: 'Đình Phương',
         role: 'ADMIN',
@@ -41,7 +41,7 @@ export function makeServer() {
       server.create('user', {
         id: 'user-2',
         email: 'supervisor@wms.com',
-        password: 'password',
+        password: '12345678',
         name: 'Supervisor User',
         nameVi: 'Giám sát viên',
         role: 'SUPERVISOR',
@@ -53,7 +53,7 @@ export function makeServer() {
       server.create('user', {
         id: 'user-3',
         email: 'operator@wms.com',
-        password: 'password',
+        password: '12345678',
         name: 'Operator User',
         nameVi: 'Nhân viên kho',
         role: 'OPERATOR',

@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { QRScanner } from '@/components/ui/qr-scanner'
-import { AIAssistantWidget, useAIInsights } from '@/components/ui/ai-assistant-widget'
 import {
   Search,
   Download,
@@ -126,9 +125,6 @@ export default function InventoryPageSimple() {
     queryFn: fetchInventory,
     refetchInterval: 60000,
   })
-
-  // AI Insights Hook
-  const { insights } = useAIInsights('inventory', { inventory })
 
   const handleScanResult = (value: string) => {
     setSearchTerm(value)
@@ -261,16 +257,6 @@ export default function InventoryPageSimple() {
           title="Quét mã để tìm sản phẩm"
         />
       )}
-
-      {/* AI Assistant Widget */}
-      <AIAssistantWidget
-        context="inventory"
-        insights={insights}
-        onAction={(insightId, action) => {
-          console.log('AI Action:', insightId, action)
-          // Handle AI actions here
-        }}
-      />
 
       {/* Header */}
       <div className="flex items-center justify-between">

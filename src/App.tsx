@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { Toaster } from 'sonner'
@@ -6,36 +6,42 @@ import { useThemeStore } from './stores/themeStore'
 import { useAuthStore } from './stores/authStore'
 import AppLayout from './components/layout/AppLayout'
 import { AnimatedPage } from './components/layout/AnimatedPage'
+import { LoadingSpinner } from './components/ui/loading-spinner'
+
+// Eager load critical routes
 import LoginPage from './features/auth/LoginPage'
 import DashboardPage from './features/dashboard/DashboardPageSimple'
-import InventoryPage from './features/inventory/InventoryPageSimple'
-import InboundOrdersPage from './features/inbound/InboundOrdersPageSimple'
-import InboundOrderDetailPage from './features/inbound/InboundOrderDetailPage'
-import CreateInboundOrderPage from './features/inbound/CreateInboundOrderPage'
-import OutboundOrdersPage from './features/outbound/OutboundOrdersPageSimple'
-import OutboundOrderDetailPage from './features/outbound/OutboundOrderDetailPage'
-import CreateOutboundOrderPage from './features/outbound/CreateOutboundOrderPage'
-import TemperaturePage from './features/temperature/TemperaturePage'
-import AlertsPage from './features/alerts/AlertsPageSimple'
-import ReportsPage from './features/reports/ReportsPageSimple'
-import SettingsPage from './features/settings/SettingsPage'
-import ZoneManagementPage from './features/zones/ZoneManagementPageSimple'
-import LocationManagementPage from './features/locations/LocationManagementPage'
-import { ProductListPage } from './features/products/ProductListPage'
-import { ProductReportPage } from './features/products/ProductReportPage'
-import { SimpleProductList } from './features/products/SimpleProductList'
-import { CreateProductPage } from './features/products/CreateProductPage'
-import ProductDetailPage from './features/products/ProductDetailPage'
-import EditProductPage from './features/products/EditProductPage'
-import EnergyManagementPage from './features/energy/EnergyManagementPageSimple'
-import GeneratorPage from './features/energy/GeneratorPage'
-import RemoteControlPage from './features/remote-control/RemoteControlPage'
-import { BlockchainTracking } from './features/blockchain/BlockchainTracking'
-import { BlockchainProductRegistration } from './features/blockchain/BlockchainProductRegistration'
-import { MekongDeltaAgricultureDashboard } from './features/agriculture/MekongDeltaAgricultureDashboard'
-import { MekongDeltaWeatherMonitoring } from './features/agriculture/MekongDeltaWeatherMonitoring'
-import { MekongDeltaTransportationHub } from './features/agriculture/MekongDeltaTransportationHub'
-import SmartAnalyticsDashboard from './features/dashboard/SmartAnalyticsDashboard'
+
+// Lazy load secondary routes for better performance
+const InventoryPage = lazy(() => import('./features/inventory/InventoryPageSimple'))
+const InboundOrdersPage = lazy(() => import('./features/inbound/InboundOrdersPageSimple'))
+const InboundOrderDetailPage = lazy(() => import('./features/inbound/InboundOrderDetailPage'))
+const CreateInboundOrderPage = lazy(() => import('./features/inbound/CreateInboundOrderPage'))
+const OutboundOrdersPage = lazy(() => import('./features/outbound/OutboundOrdersPageSimple'))
+const OutboundOrderDetailPage = lazy(() => import('./features/outbound/OutboundOrderDetailPage'))
+const CreateOutboundOrderPage = lazy(() => import('./features/outbound/CreateOutboundOrderPage'))
+const TemperaturePage = lazy(() => import('./features/temperature/TemperaturePage'))
+const AlertsPage = lazy(() => import('./features/alerts/AlertsPageSimple'))
+const ReportsPage = lazy(() => import('./features/reports/ReportsPageSimple'))
+const SettingsPage = lazy(() => import('./features/settings/SettingsPage'))
+const ZoneManagementPage = lazy(() => import('./features/zones/ZoneManagementPageSimple'))
+const LocationManagementPage = lazy(() => import('./features/locations/LocationManagementPage'))
+const ProductListPage = lazy(() => import('./features/products/ProductListPage').then(m => ({ default: m.ProductListPage })))
+const ProductReportPage = lazy(() => import('./features/products/ProductReportPage').then(m => ({ default: m.ProductReportPage })))
+const SimpleProductList = lazy(() => import('./features/products/SimpleProductList').then(m => ({ default: m.SimpleProductList })))
+const CreateProductPage = lazy(() => import('./features/products/CreateProductPage').then(m => ({ default: m.CreateProductPage })))
+const ProductDetailPage = lazy(() => import('./features/products/ProductDetailPage'))
+const EditProductPage = lazy(() => import('./features/products/EditProductPage'))
+const EnergyManagementPage = lazy(() => import('./features/energy/EnergyManagementPageSimple'))
+const GeneratorPage = lazy(() => import('./features/energy/GeneratorPage'))
+const RemoteControlPage = lazy(() => import('./features/remote-control/RemoteControlPage'))
+const BlockchainTracking = lazy(() => import('./features/blockchain/BlockchainTracking').then(m => ({ default: m.BlockchainTracking })))
+const BlockchainProductRegistration = lazy(() => import('./features/blockchain/BlockchainProductRegistration').then(m => ({ default: m.BlockchainProductRegistration })))
+const MekongDeltaAgricultureDashboard = lazy(() => import('./features/agriculture/MekongDeltaAgricultureDashboard').then(m => ({ default: m.MekongDeltaAgricultureDashboard })))
+const MekongDeltaWeatherMonitoring = lazy(() => import('./features/agriculture/MekongDeltaWeatherMonitoring').then(m => ({ default: m.MekongDeltaWeatherMonitoring })))
+const MekongDeltaTransportationHub = lazy(() => import('./features/agriculture/MekongDeltaTransportationHub').then(m => ({ default: m.MekongDeltaTransportationHub })))
+const SmartAnalyticsDashboard = lazy(() => import('./features/dashboard/SmartAnalyticsDashboard'))
+const EnhancedDashboard = lazy(() => import('./features/dashboard/EnhancedDashboard'))
 
 function App() {
   return (
@@ -85,6 +91,16 @@ function AppContainer() {
               path="/dashboard"
               element={
                 <AnimatedPage>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <EnhancedDashboard />
+                  </Suspense>
+                </AnimatedPage>
+              }
+            />
+            <Route
+              path="/dashboard/simple"
+              element={
+                <AnimatedPage>
                   <DashboardPage />
                 </AnimatedPage>
               }
@@ -93,7 +109,9 @@ function AppContainer() {
               path="/analytics"
               element={
                 <AnimatedPage>
-                  <SmartAnalyticsDashboard />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <SmartAnalyticsDashboard />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -101,7 +119,9 @@ function AppContainer() {
               path="/inventory"
               element={
                 <AnimatedPage>
-                  <InventoryPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <InventoryPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -109,7 +129,9 @@ function AppContainer() {
               path="/inbound"
               element={
                 <AnimatedPage>
-                  <InboundOrdersPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <InboundOrdersPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -117,7 +139,9 @@ function AppContainer() {
               path="/inbound/create"
               element={
                 <AnimatedPage>
-                  <CreateInboundOrderPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <CreateInboundOrderPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -125,7 +149,9 @@ function AppContainer() {
               path="/inbound/:orderId"
               element={
                 <AnimatedPage>
-                  <InboundOrderDetailPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <InboundOrderDetailPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -133,7 +159,9 @@ function AppContainer() {
               path="/outbound"
               element={
                 <AnimatedPage>
-                  <OutboundOrdersPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <OutboundOrdersPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -141,7 +169,9 @@ function AppContainer() {
               path="/outbound/create"
               element={
                 <AnimatedPage>
-                  <CreateOutboundOrderPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <CreateOutboundOrderPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -149,7 +179,9 @@ function AppContainer() {
               path="/outbound/:orderId"
               element={
                 <AnimatedPage>
-                  <OutboundOrderDetailPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <OutboundOrderDetailPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -157,7 +189,9 @@ function AppContainer() {
               path="/temperature"
               element={
                 <AnimatedPage>
-                  <TemperaturePage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <TemperaturePage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -165,7 +199,9 @@ function AppContainer() {
               path="/alerts"
               element={
                 <AnimatedPage>
-                  <AlertsPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AlertsPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -173,7 +209,9 @@ function AppContainer() {
               path="/reports"
               element={
                 <AnimatedPage>
-                  <ReportsPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ReportsPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -181,7 +219,9 @@ function AppContainer() {
               path="/zones"
               element={
                 <AnimatedPage>
-                  <ZoneManagementPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ZoneManagementPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -189,7 +229,9 @@ function AppContainer() {
               path="/locations"
               element={
                 <AnimatedPage>
-                  <LocationManagementPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <LocationManagementPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -197,7 +239,9 @@ function AppContainer() {
               path="/products"
               element={
                 <AnimatedPage>
-                  <ProductListPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ProductListPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -205,7 +249,9 @@ function AppContainer() {
               path="/products/report"
               element={
                 <AnimatedPage>
-                  <ProductReportPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ProductReportPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -213,7 +259,9 @@ function AppContainer() {
               path="/products/simple"
               element={
                 <AnimatedPage>
-                  <SimpleProductList />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <SimpleProductList />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -221,7 +269,9 @@ function AppContainer() {
               path="/products/create"
               element={
                 <AnimatedPage>
-                  <CreateProductPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <CreateProductPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -229,7 +279,9 @@ function AppContainer() {
               path="/products/:productId"
               element={
                 <AnimatedPage>
-                  <ProductDetailPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ProductDetailPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -237,7 +289,9 @@ function AppContainer() {
               path="/products/:productId/edit"
               element={
                 <AnimatedPage>
-                  <EditProductPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <EditProductPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -245,7 +299,9 @@ function AppContainer() {
               path="/energy"
               element={
                 <AnimatedPage>
-                  <EnergyManagementPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <EnergyManagementPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -253,7 +309,9 @@ function AppContainer() {
               path="/generator"
               element={
                 <AnimatedPage>
-                  <GeneratorPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <GeneratorPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -261,7 +319,9 @@ function AppContainer() {
               path="/remote-control"
               element={
                 <AnimatedPage>
-                  <RemoteControlPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <RemoteControlPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -269,7 +329,9 @@ function AppContainer() {
               path="/settings"
               element={
                 <AnimatedPage>
-                  <SettingsPage />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <SettingsPage />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -277,7 +339,9 @@ function AppContainer() {
               path="/blockchain"
               element={
                 <AnimatedPage>
-                  <BlockchainTracking />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <BlockchainTracking />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -285,7 +349,9 @@ function AppContainer() {
               path="/blockchain/register"
               element={
                 <AnimatedPage>
-                  <BlockchainProductRegistration />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <BlockchainProductRegistration />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -293,7 +359,9 @@ function AppContainer() {
               path="/agriculture"
               element={
                 <AnimatedPage>
-                  <MekongDeltaAgricultureDashboard />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <MekongDeltaAgricultureDashboard />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -301,7 +369,9 @@ function AppContainer() {
               path="/weather"
               element={
                 <AnimatedPage>
-                  <MekongDeltaWeatherMonitoring />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <MekongDeltaWeatherMonitoring />
+                  </Suspense>
                 </AnimatedPage>
               }
             />
@@ -309,7 +379,9 @@ function AppContainer() {
               path="/transportation"
               element={
                 <AnimatedPage>
-                  <MekongDeltaTransportationHub />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <MekongDeltaTransportationHub />
+                  </Suspense>
                 </AnimatedPage>
               }
             />

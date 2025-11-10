@@ -313,8 +313,8 @@ export default function FinancialReportPage() {
         }
       })
 
-      // @ts-expect-error - jspdf-autotable finalY
-      yPos = doc.lastAutoTable.finalY + 15
+  // Guard access to lastAutoTable
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15
 
       // Bảng so sánh theo tháng
       doc.setFontSize(14)
@@ -357,8 +357,8 @@ export default function FinancialReportPage() {
         }
       })
 
-      // @ts-expect-error - jspdf-autotable finalY
-      yPos = doc.lastAutoTable.finalY + 15
+  // Guard access to lastAutoTable
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15
 
       // Phân tích lợi nhuận
       doc.setFontSize(14)
@@ -447,8 +447,8 @@ export default function FinancialReportPage() {
         }
       })
 
-      // @ts-expect-error - jspdf-autotable finalY
-      yPos = doc.lastAutoTable.finalY + 15
+  // Guard access to lastAutoTable
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15
 
       // Bảng phân tích dòng tiền
       doc.setFontSize(14)
@@ -492,8 +492,8 @@ export default function FinancialReportPage() {
         }
       })
 
-      // @ts-expect-error - jspdf-autotable finalY
-      yPos = doc.lastAutoTable.finalY + 15
+  // Guard access to lastAutoTable
+  yPos = (doc.lastAutoTable?.finalY ?? yPos) + 15
 
       // Tóm tắt & Nhận xét
       doc.setFillColor(240, 253, 244)

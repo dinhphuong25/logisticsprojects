@@ -4,6 +4,7 @@ import { useWarehouseStore } from '@/stores/warehouseStore'
 import { useUIStore } from '@/stores/uiStore'
 import { Button } from '@/components/ui/button'
 import { CommandPalette } from '@/components/ui/command-palette'
+import { NotificationCenter } from '@/components/ui/notification-center'
 import { LogOut, Building2, Activity, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -80,6 +81,9 @@ export default function Topbar() {
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Command Palette */}
           <CommandPalette />
+          
+          {/* Notification Center */}
+          <NotificationCenter />
           
           {/* User Menu */}
           <div className="ml-2 sm:ml-4 group relative">
