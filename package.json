@@ -75,5 +75,13 @@
     "vite": "^7.1.7",
     "vite-plugin-pwa": "^1.1.0",
     "workbox-window": "^7.3.0"
+  },
+  "overrides": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "resolutions": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   }
 }
