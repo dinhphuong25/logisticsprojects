@@ -138,7 +138,7 @@ export function AdvancedFilters({ isOpen, onClose, className }: AdvancedFiltersP
                 <button
                   key={status.value}
                   onClick={() => setFilter('stockStatus', 
-                    filters.stockStatus === status.value ? 'all' : status.value
+                    filters.stockStatus === status.value ? 'all' : status.value as 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'
                   )}
                   className={cn(
                     "p-2 rounded-lg border text-sm transition-all text-left",

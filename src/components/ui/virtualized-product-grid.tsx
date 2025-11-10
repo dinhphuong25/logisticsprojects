@@ -1,11 +1,14 @@
 import { useMemo } from 'react'
-import { FixedSizeList as List } from 'react-window'
+// @ts-expect-error - react-window types issue with React 19
+import { FixedSizeList } from 'react-window'
 import { useProductStore, type EnhancedProduct } from '@/stores/productStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Eye, Edit, Star, MapPin, Thermometer, Clock, CheckCircle, Shield, Sprout } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const List = FixedSizeList
 
 interface VirtualizedProductGridProps {
   className?: string
@@ -297,7 +300,9 @@ export const usePerformanceMonitor = () => {
 export const useMemoryMonitor = () => {
   const checkMemoryUsage = () => {
     if ('memory' in performance) {
-      const memory = (performance as any).memory
+      const memory = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      if (!memory) return null
+      
       const usage = {
         used: Math.round(memory.usedJSHeapSize / 1048576), // MB
         total: Math.round(memory.totalJSHeapSize / 1048576), // MB

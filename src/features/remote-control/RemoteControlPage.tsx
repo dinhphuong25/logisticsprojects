@@ -38,7 +38,7 @@ export default function RemoteControlPage() {
   const queryClient = useQueryClient()
   const [selectedZone, setSelectedZone] = useState<string>('all')
   const [autoMode, setAutoMode] = useState(false)
-  const autoModeIntervalRef = useRef<number | null>(null)
+  const autoModeIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const lastControlTime = useRef<Map<string, number>>(new Map())
 
   const { data: devices = [] } = useQuery<Device[]>({
@@ -204,13 +204,14 @@ export default function RemoteControlPage() {
       applySmartLogic()
       
       // Then run every 30 seconds
-      autoModeIntervalRef.current = setInterval(() => {
+      const intervalId = setInterval(() => {
         applySmartLogic()
       }, 30000)
+      autoModeIntervalRef.current = intervalId as unknown as NodeJS.Timeout
     } else {
       // Clear interval when auto mode is disabled
       if (autoModeIntervalRef.current) {
-        clearInterval(autoModeIntervalRef.current)
+        clearInterval(autoModeIntervalRef.current as unknown as NodeJS.Timeout)
         autoModeIntervalRef.current = null
       }
     }

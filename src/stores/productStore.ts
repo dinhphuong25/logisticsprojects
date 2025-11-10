@@ -52,7 +52,7 @@ export interface EnhancedProduct extends Product {
     carbonFootprint?: number
     cost?: number
   }
-  qualityGrade?: 'A+' | 'A' | 'B' | 'C'
+  qualityGrade?: 'A+' | 'A' | 'B+' | 'B' | 'C'
   marketDemand?: 'high' | 'medium' | 'low'
   
   // Smart inventory fields

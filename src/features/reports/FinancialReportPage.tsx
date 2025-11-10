@@ -1,17 +1,14 @@
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Download,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
   Package,
-  TruckIcon,
   Users,
   Zap,
   CreditCard,
@@ -22,6 +19,14 @@ import {
 import { toast } from 'sonner'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+
+// Extend jsPDF type for autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: unknown) => jsPDF
+    lastAutoTable: { finalY: number }
+  }
+}
 
 interface FinancialData {
   period: string
@@ -127,7 +132,8 @@ const operatingExpenses = [
 ]
 
 export default function FinancialReportPage() {
-  const [selectedMonth, setSelectedMonth] = useState<string>('all')
+  // Reserved for future feature: filter by month
+  // const [selectedMonth, setSelectedMonth] = useState<string>('all')
 
   const formatCurrency = (value: number): string => {
     if (value >= 1000000000) {
@@ -228,9 +234,8 @@ export default function FinancialReportPage() {
       doc.setTextColor(99, 102, 241)
       doc.text('PHAN TICH DOANH THU', 20, yPos)
       
-      yPos += 5
+      yPos += 10
 
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [['Hang muc', 'Gia tri', 'Ti le', 'Tang truong']],
@@ -281,7 +286,6 @@ export default function FinancialReportPage() {
       yPos += 10
 
       // Bảng chi phí vận hành
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [['Loai chi phi', 'Gia tri', 'Ti le', 'Bien dong']],
@@ -323,7 +327,6 @@ export default function FinancialReportPage() {
       
       yPos += 5
 
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [['Thang', 'Doanh thu', 'Chi phi', 'Loi nhuan', 'Bien LN']],
@@ -367,7 +370,6 @@ export default function FinancialReportPage() {
       
       yPos += 5
 
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         body: [
@@ -413,7 +415,6 @@ export default function FinancialReportPage() {
       
       yPos += 5
 
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [['Xep hang', 'Khach hang', 'Doanh thu', 'So don', 'TB/Don']],
@@ -457,7 +458,6 @@ export default function FinancialReportPage() {
       
       yPos += 5
 
-      // @ts-expect-error - jspdf-autotable types
       doc.autoTable({
         startY: yPos,
         head: [['Hang muc', 'Gia tri']],

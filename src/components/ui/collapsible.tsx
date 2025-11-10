@@ -73,12 +73,12 @@ const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTrigge
       onClick?.(event)
     }
 
-    if (asChild) {
-      return React.cloneElement(props.children as React.ReactElement, {
+    if (asChild && React.isValidElement(props.children)) {
+      return React.cloneElement(props.children, {
         onClick: handleClick,
         'aria-expanded': open,
         'data-state': open ? 'open' : 'closed',
-      })
+      } as React.HTMLAttributes<HTMLElement>)
     }
 
     return (
