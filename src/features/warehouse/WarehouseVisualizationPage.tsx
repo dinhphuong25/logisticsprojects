@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+// import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,7 +60,7 @@ interface ActivityLog {
 }
 
 export default function WarehouseVisualizationPage() {
-  const { t } = useTranslation()
+  // const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d')
@@ -469,14 +469,14 @@ export default function WarehouseVisualizationPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Tiêu đề */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, #1e3a8a, #7c3aed, #db2777)' }}>
-            {t('3D Warehouse Visualization')}
+            Trực quan hóa kho hàng 3D
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Real-time monitoring with camera surveillance and worker tracking
+            Giám sát thời gian thực với camera và theo dõi nhân viên
           </p>
         </div>
 
@@ -487,7 +487,7 @@ export default function WarehouseVisualizationPage() {
             onClick={() => setShowCameras(!showCameras)}
           >
             <Video className="w-4 h-4 mr-2" />
-            Cameras
+            Camera
           </Button>
           <Button
             variant={showWorkers ? 'default' : 'outline'}
@@ -495,18 +495,18 @@ export default function WarehouseVisualizationPage() {
             onClick={() => setShowWorkers(!showWorkers)}
           >
             <Users className="w-4 h-4 mr-2" />
-            Workers
+            Nhân viên
           </Button>
         </div>
       </div>
 
-      {/* Stats Dashboard */}
+      {/* Bảng thống kê */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Active Zones</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Khu vực hoạt động</p>
                 <p className="text-2xl font-bold">{zones.length}</p>
               </div>
               <Box className="w-8 h-8 text-blue-500" />
@@ -518,7 +518,7 @@ export default function WarehouseVisualizationPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cameras Online</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Camera đang hoạt động</p>
                 <p className="text-2xl font-bold text-green-600">
                   {cameras.filter((c) => c.status === 'online').length}/{cameras.length}
                 </p>
@@ -532,7 +532,7 @@ export default function WarehouseVisualizationPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Active Workers</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Nhân viên đang hoạt động</p>
                 <p className="text-2xl font-bold text-emerald-600">
                   {workers.filter((w) => w.status === 'active').length}/{workers.length}
                 </p>
@@ -546,7 +546,7 @@ export default function WarehouseVisualizationPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Capacity</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Dung lượng</p>
                 <p className="text-2xl font-bold">
                   {zones.length > 0
                     ? Math.round((zones.reduce((sum, z) => sum + z.used, 0) / zones.reduce((sum, z) => sum + z.capacity, 0)) * 100)
@@ -562,7 +562,7 @@ export default function WarehouseVisualizationPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Live Activities</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Hoạt động trực tiếp</p>
                 <p className="text-2xl font-bold text-orange-600">{activities.length}</p>
               </div>
               <Activity className="w-8 h-8 text-orange-500" />

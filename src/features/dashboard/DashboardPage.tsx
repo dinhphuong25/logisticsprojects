@@ -240,7 +240,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-6 animate-fade-in px-3 sm:px-0">
+    <div className="space-y-3 sm:space-y-6 animate-fade-in px-2 sm:px-0">
       {/* Header - Mobile First */}
       <div className="flex flex-col gap-3">
         <div>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards Grid - Mobile First */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
         {kpiCards.map((card, index) => {
           const Icon = card.icon
           return (
@@ -341,7 +341,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Solar Energy Section - Mobile First */}
-      <Card className="border-0 shadow-lg overflow-hidden relative bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-red-950/20">
+      <Card className="border-0 shadow-lg overflow-hidden relative bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-red-950/20 p-2 sm:p-0">
         <div className="absolute top-0 right-0 w-32 h-32 sm:w-80 sm:h-80 bg-yellow-500/5 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-56 sm:h-56 bg-orange-500/5 rounded-full blur-2xl"></div>
         
@@ -373,7 +373,7 @@ export default function DashboardPage() {
         </CardHeader>
 
         <CardContent className="relative z-10 p-3 sm:p-6">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
             {/* Solar Generation */}
             <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-5 border border-yellow-200 dark:border-yellow-800/30 shadow-md">
               <div className="flex items-center justify-between mb-2">
@@ -486,7 +486,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Charts and Analytics Row - Mobile First */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 sm:gap-6">
         {/* Activity Chart */}
         <Card className="lg:col-span-2 border-0 shadow-lg">
           <CardHeader className="p-3 sm:p-6">
@@ -616,7 +616,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Row - Quick Actions & Recent Activity - Mobile Optimized */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 sm:gap-6">
         {/* Quick Actions */}
         <Card className="border-0 shadow-lg sm:shadow-xl">
           <CardHeader className="p-3 sm:p-6">
