@@ -47,7 +47,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { useProductStore } from '@/stores/productStore'
+import { useProductStore } from '@/stores'
 import { toast } from 'sonner'
 
 interface DashboardStats {

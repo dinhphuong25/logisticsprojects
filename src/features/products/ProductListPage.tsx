@@ -34,6 +34,28 @@ export const ProductListPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
+  const FALLBACK_IMAGE =
+    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'
+
+  const getProductImage = (product: (typeof products)[0]) => {
+    const raw = product.image || (product as { imageUrl?: string }).imageUrl
+    if (!raw) return FALLBACK_IMAGE
+
+    let normalized = raw.startsWith('http://') ? raw.replace('http://', 'https://') : raw
+
+    if (normalized.includes('images.unsplash.com') && !normalized.includes('auto=format')) {
+      const separator = normalized.includes('?') ? '&' : '?'
+      normalized = `${normalized}${separator}auto=format&fit=crop&w=800&q=80&crop=faces`
+    }
+
+    return normalized
+  }
+
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    event.currentTarget.onerror = null
+    event.currentTarget.src = FALLBACK_IMAGE
+  }
+
   // Get unique categories
   const categories = useMemo(() => {
     const cats = Array.from(new Set(products.map(p => p.category)))
@@ -438,8 +460,10 @@ export const ProductListPage = () => {
                   {/* Product Image with Overlay */}
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={product.image}
+                      src={getProductImage(product)}
                       alt={product.name}
+                      loading="lazy"
+                      onError={handleImageError}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     {/* Gradient Overlay */}
@@ -608,8 +632,10 @@ export const ProductListPage = () => {
                           <div className="flex-shrink-0 h-12 w-12">
                             <img
                               className="h-12 w-12 rounded-lg object-cover"
-                              src={product.image}
+                              src={getProductImage(product)}
                               alt={product.name}
+                              loading="lazy"
+                              onError={handleImageError}
                             />
                           </div>
                           <div className="ml-4">

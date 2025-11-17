@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { useUIStore } from '@/stores/uiStore'
+import { useUIStore } from '@/stores'
 import {
   LayoutDashboard,
   Package,

@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
-import { useUIStore } from '@/stores/uiStore'
-import { useProductStore } from '@/stores/productStore'
-import { useWarehouseStore } from '@/stores/warehouseStore'
+import { useUIStore, useProductStore, useWarehouseStore } from '@/stores'
 import { Bell, X, Shield, Package, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useProductStore } from '@/stores/productStore'
-import { useUIStore } from '@/stores/uiStore'
+import { useProductStore, useUIStore } from '@/stores'
 import { useDebounce } from '@/hooks/useDebounce'
 import { 
   Search, X, Clock, TrendingUp, Filter, Sparkles, 

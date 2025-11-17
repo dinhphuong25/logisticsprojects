@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useProductStore } from '@/stores/productStore'
+import { useProductStore } from '@/stores'
 import { MEKONG_DELTA_CONFIG } from '@/lib/mekong-delta-config'
 import { 
   Filter, X, RotateCcw, TrendingUp, Calendar, 

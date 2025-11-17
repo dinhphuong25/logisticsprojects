@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { AIEngine } from '@/lib/ai-engine'
 import type { AIInsight, SmartRecommendation } from '@/lib/ai-engine'
-import { useProductStore } from '@/stores/productStore'
+import { useProductStore } from '@/stores'
 
 export default function SmartAnalyticsDashboard() {
   const { products } = useProductStore()

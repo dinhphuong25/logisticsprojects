@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/stores/authStore'
-import { useWarehouseStore } from '@/stores/warehouseStore'
-import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore, useWarehouseStore, useUIStore } from '@/stores'
 import { Button } from '@/components/ui/button'
 import { CommandPalette } from '@/components/ui/command-palette'
 import { NotificationCenter } from '@/components/ui/notification-center'

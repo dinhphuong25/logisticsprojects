@@ -1,7 +1,7 @@
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import { Outlet } from 'react-router-dom'
-import { useUIStore } from '@/stores/uiStore'
+import { useUIStore } from '@/stores'
 import { cn } from '@/lib/utils'
 
 export default function AppLayout() {

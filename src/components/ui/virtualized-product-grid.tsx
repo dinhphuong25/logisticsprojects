@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 // @ts-expect-error - react-window types issue with React 19
 import { FixedSizeList } from 'react-window'
-import { useProductStore, type EnhancedProduct } from '@/stores/productStore'
+import { useProductStore, type EnhancedProduct } from '@/stores'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

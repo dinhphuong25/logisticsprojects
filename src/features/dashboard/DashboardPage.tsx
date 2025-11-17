@@ -15,7 +15,6 @@ import {
   DollarSign,
   Users,
   Truck,
-  Clock,
   Target,
   Zap,
   BarChart3,
@@ -134,6 +133,18 @@ export default function DashboardPage() {
     setTimeout(() => setRefreshing(false), 1000)
   }
 
+  const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
+
+  const compactNumber = new Intl.NumberFormat('vi-VN', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
+
   const kpiCards = [
     {
       title: 'Nhập hàng hôm nay',
@@ -217,6 +228,56 @@ export default function DashboardPage() {
     },
   ]
 
+  const heroHighlights = [
+    {
+      label: 'Doanh thu hôm nay',
+      value: currencyFormatter.format(kpis?.revenue ?? 0),
+      meta: '↑ 15.8% so với hôm qua',
+    },
+    {
+      label: 'Đơn đang xử lý',
+      value: compactNumber.format(kpis?.activeOrders ?? 0),
+      meta: 'Cần hoàn tất trước 18h',
+    },
+    {
+      label: 'Nhập hàng',
+      value: compactNumber.format(kpis?.inboundToday ?? 0),
+      meta: 'Lịch trình đúng 94%',
+    },
+    {
+      label: 'Hiệu suất',
+      value: `${kpis?.efficiency ?? 0}%`,
+      meta: 'Mục tiêu 95%',
+    },
+  ]
+
+  const liveHealth = [
+    {
+      label: 'Cảnh báo mở',
+      value: kpis?.openAlerts ?? 0,
+      status: kpis?.openAlerts ? 'Cần xử lý sớm' : 'Ổn định',
+      accentText: 'text-orange-600',
+      accentBg: 'bg-orange-100',
+      icon: AlertTriangle,
+    },
+    {
+      label: 'Kho lạnh',
+      value: `${((kpis?.onHandChill || 0) / 1000).toFixed(1)}K kg`,
+      status: 'Nguồn hàng ổn định',
+      accentText: 'text-cyan-600',
+      accentBg: 'bg-cyan-100',
+      icon: Thermometer,
+    },
+    {
+      label: 'Kho đông',
+      value: `${((kpis?.onHandFrozen || 0) / 1000).toFixed(1)}K kg`,
+      status: 'Đầy 78% dung lượng',
+      accentText: 'text-indigo-600',
+      accentBg: 'bg-indigo-100',
+      icon: Warehouse,
+    },
+  ]
+
   const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
     switch (trend) {
       case 'up':
@@ -240,105 +301,134 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-6 animate-fade-in px-2 sm:px-0">
-      {/* Header - Mobile First */}
-      <div className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-transparent bg-clip-text leading-tight" style={{ backgroundImage: 'linear-gradient(to right, #0ea5e9, #8b5cf6, #ec4899)' }}>
-            Dashboard
-          </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1.5">
-            <Clock className="w-3 h-3 flex-shrink-0" />
-            <span>Giám sát thời gian thực</span>
-          </p>
-        </div>
+    <div className="space-y-6 animate-fade-in px-2 sm:px-0">
+      <section className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-900 text-white">
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-blue-500/30 to-transparent" />
+          <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-blue-500/40 blur-3xl" />
+          <CardContent className="relative space-y-6 p-6 sm:p-8">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-4">
+                <p className="inline-flex items-center gap-2 rounded-full border border-white/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.4em] text-emerald-100">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+                  EcoFresh Pulse
+                </p>
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-black leading-tight sm:text-4xl">Trung tâm điều khiển chuỗi lạnh</h1>
+                  <p className="text-sm text-white/70">
+                    Theo dõi cảm biến, đơn hàng và năng lượng theo thời gian thực – mọi dữ liệu hội tụ trong một bảng điều khiển.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(['today', 'week', 'month'] as Array<typeof timeRange>).map((range) => (
+                  <Button
+                    key={range}
+                    variant={timeRange === range ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeRange(range)}
+                    className={`h-9 px-4 text-xs ${
+                      timeRange === range ? 'bg-white text-slate-900' : 'border-white/40 text-white/80 hover:text-white'
+                    }`}
+                  >
+                    {range === 'today' ? 'Hôm nay' : range === 'week' ? 'Tuần' : 'Tháng'}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="h-9 px-3 border-white/40 text-white/80 hover:text-white"
+                >
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button size="sm" className="h-9 bg-white/20 px-4 text-xs font-semibold text-white hover:bg-white/30">
+                  <Download className="mr-2 h-4 w-4" />
+                  Báo cáo
+                </Button>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0">
-          <Button
-            variant={timeRange === 'today' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('today')}
-            className="text-xs h-8 px-3 flex-shrink-0"
-          >
-            Hôm nay
-          </Button>
-          <Button
-            variant={timeRange === 'week' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('week')}
-            className="text-xs h-8 px-3 flex-shrink-0"
-          >
-            Tuần
-          </Button>
-          <Button
-            variant={timeRange === 'month' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('month')}
-            className="text-xs h-8 px-3 flex-shrink-0"
-          >
-            Tháng
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="text-xs h-8 px-2 flex-shrink-0"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          </Button>
-          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-cyan-600 text-xs h-8 px-2 flex-shrink-0 sm:px-3">
-            <Download className="w-3.5 h-3.5 sm:mr-2" />
-            <span className="hidden sm:inline">Báo cáo</span>
-          </Button>
-        </div>
-      </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100">
+              <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.8)]"></span>
+              Hệ thống hoạt động · tất cả cảm biến đang online
+            </div>
 
-      {/* KPI Cards Grid - Mobile First */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {heroHighlights.map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">{item.label}</p>
+                  <p className="mt-2 text-xl font-black sm:text-2xl">{item.value}</p>
+                  <p className="text-xs text-white/70">{item.meta}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-slate-100 shadow-sm">
+          <CardContent className="space-y-4 p-6">
+            <div>
+              <p className="text-sm font-semibold text-slate-500">Tình trạng trực tiếp</p>
+              <h3 className="text-xl font-black text-slate-900">EcoFresh Pulse</h3>
+            </div>
+            <div className="space-y-4">
+              {liveHealth.map((item, index) => {
+                const Icon = item.icon
+                return (
+                  <div
+                    key={`${item.label}-${index}`}
+                    className="flex items-center justify-between rounded-2xl border border-slate-100 p-3 hover:border-slate-200 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.accentBg}`}>
+                        <Icon className={`h-4 w-4 ${item.accentText}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-600">{item.label}</p>
+                        <p className="text-xs text-slate-400">{item.status}</p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-black text-slate-900">{item.value}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpiCards.map((card, index) => {
           const Icon = card.icon
           return (
             <Card
               key={index}
-              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-95 border-0 overflow-hidden relative"
-              style={{ animationDelay: `${index * 0.05}s` }}
+              className="rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
-              {/* Gradient Background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
-              
-              <CardContent className="p-3 sm:p-5 relative">
-                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                  <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${card.iconBg} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
-                    <Icon className={`w-4 h-4 sm:w-6 sm:h-6 ${card.iconColor}`} />
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{card.title}</p>
+                    <p className="text-2xl font-black text-slate-900">{card.value}</p>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className={`${getTrendColor(card.trend)} bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm text-[9px] sm:text-xs px-1 sm:px-2 py-0.5`}
-                  >
-                    <span className="flex items-center gap-0.5">
-                      {getTrendIcon(card.trend)}
-                      <span className="hidden sm:inline">{card.change}</span>
-                    </span>
-                  </Badge>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${card.iconBg}`}>
+                    <Icon className={`h-5 w-5 ${card.iconColor}`} />
+                  </div>
                 </div>
-
-                <div className="space-y-0.5 sm:space-y-1">
-                  <p className="text-[10px] sm:text-sm font-medium text-gray-600 dark:text-gray-400 line-clamp-2 leading-tight">
-                    {card.title}
-                  </p>
-                  <p className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    {card.value}
-                  </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className={`flex items-center gap-1 font-semibold ${getTrendColor(card.trend)}`}>
+                    {getTrendIcon(card.trend)}
+                    {card.change}
+                  </span>
+                  <span className="text-slate-400">So với hôm qua</span>
                 </div>
-
-                {/* Sparkline effect */}
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-20"></div>
               </CardContent>
             </Card>
           )
         })}
-      </div>
+      </section>
 
       {/* Solar Energy Section - Mobile First */}
       <Card className="border-0 shadow-lg overflow-hidden relative bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-950/20 dark:via-orange-950/20 dark:to-red-950/20 p-2 sm:p-0">
