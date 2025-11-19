@@ -98,6 +98,8 @@ export interface Inventory {
 }
 
 // Đơn nhập kho
+export type InboundPriority = "LOW" | "MEDIUM" | "HIGH";
+
 export interface InboundOrder {
   id: string;
   orderNo: string; // "IB-20251102-001"
@@ -114,6 +116,15 @@ export interface InboundOrder {
   createdAt: string;
   createdBy: string;
   notes?: string;
+  priority?: InboundPriority;
+  supplierContact?: string;
+  carrierContact?: string;
+  driverName?: string;
+  driverPhone?: string;
+  receivedBy?: string;
+  qcBy?: string;
+  putawayBy?: string;
+  completedAt?: string;
 }
 
 export type InboundStatus = "PENDING" | "SCHEDULED" | "RECEIVING" | "QC" | "PUTAWAY" | "COMPLETED" | "CANCELLED";
@@ -129,6 +140,10 @@ export interface InboundLine {
   lotNo?: string;
   mfgDate?: string;
   expDate?: string;
+  damagedQty?: number;
+  unit?: string;
+  temperature?: number;
+  zone?: string;
   
   // Populated
   product?: Product;

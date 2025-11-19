@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,14 +19,13 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react'
+import { apiClient } from '@/lib/api'
+import type { InboundOrder } from '@/types'
 
-interface InboundOrder {
-  id: string
-  orderNo: string
-  supplier: string
-  carrier: string
-  trailerNo?: string
-  status: 'PENDING' | 'SCHEDULED' | 'RECEIVING' | 'QC' | 'PUTAWAY' | 'COMPLETED' | 'CANCELLED'
+type InboundStatus = InboundOrder['status']
+type InboundPriority = Required<Pick<InboundOrder, 'priority'>>['priority']
+
+interface InboundOrderView extends InboundOrder {
   products: {
     id: string
     name: string
@@ -35,93 +34,52 @@ interface InboundOrder {
     receivedQty: number
     unit: string
   }[]
-  totalQty: number
-  receivedQty: number
-  eta: string
-  receivedDate?: string
-  priority: 'HIGH' | 'MEDIUM' | 'LOW'
-  notes?: string
+  priority: InboundPriority
 }
 
-// Mock data function
-const fetchInboundOrders = async (): Promise<InboundOrder[]> => {
-  await new Promise(resolve => setTimeout(resolve, 400))
-  
-  const suppliers = ['Fresh Seafood Co.', 'Global Meat Import', 'Asia Vegetables Ltd.', 'Premium Dairy Corp.']
-  const carriers = ['DHL Express', 'FedEx Logistics', 'VN Transport', 'Fast Shipping Co.']
-  const products = [
-    { name: 'Cá hồi đông lạnh', sku: 'FISH-001', unit: 'KG' },
-    { name: 'Thịt bò Wagyu', sku: 'BEEF-001', unit: 'KG' },
-    { name: 'Tôm sú đông lạnh', sku: 'SHRIMP-001', unit: 'KG' },
-    { name: 'Sữa tươi Úc', sku: 'MILK-001', unit: 'Lít' },
-    { name: 'Phô mai Pháp', sku: 'CHEESE-001', unit: 'KG' },
-  ]
-  const statuses: InboundOrder['status'][] = ['PENDING', 'SCHEDULED', 'RECEIVING', 'QC', 'PUTAWAY', 'COMPLETED']
-  const priorities: InboundOrder['priority'][] = ['HIGH', 'MEDIUM', 'LOW']
-
-  return Array.from({ length: 15 }, (_, i) => {
-    const status = statuses[i % statuses.length]
-    const eta = new Date()
-    eta.setDate(eta.getDate() + (i % 7) - 3)
-    
-    const selectedProducts = [
-      { 
-        id: `p-${i}-1`, 
-        ...products[i % products.length],
-        expectedQty: 500 + Math.floor(Math.random() * 500),
-        receivedQty: status === 'COMPLETED' ? 500 + Math.floor(Math.random() * 500) : 
-                     ['RECEIVING', 'QC', 'PUTAWAY'].includes(status) ? Math.floor(Math.random() * 300) : 0
-      }
-    ]
-
-    const totalQty = selectedProducts.reduce((sum, p) => sum + p.expectedQty, 0)
-    const receivedQty = selectedProducts.reduce((sum, p) => sum + p.receivedQty, 0)
-
-    return {
-      id: `ib-${i + 1}`,
-      orderNo: `IB-${String(20251102 + i).padStart(8, '0')}-${String(i + 1).padStart(3, '0')}`,
-      supplier: suppliers[i % suppliers.length],
-      carrier: carriers[i % carriers.length],
-      trailerNo: `TRL-${Math.floor(1000 + Math.random() * 9000)}`,
-      status,
-      products: selectedProducts,
-      totalQty,
-      receivedQty,
-      eta: eta.toISOString(),
-      receivedDate: status === 'COMPLETED' ? new Date().toISOString() : undefined,
-      priority: priorities[i % priorities.length],
-      notes: i % 3 === 0 ? 'Cần kiểm tra nhiệt độ kỹ lưỡng' : undefined,
-    }
-  })
-}
-
-// Update order status
-const updateOrderStatus = async (orderId: string, status: string) => {
-  await new Promise(resolve => setTimeout(resolve, 800))
-  return { success: true, orderId, status }
-}
+const mapInboundOrder = (order: InboundOrder): InboundOrderView => ({
+  ...order,
+  priority: order.priority ?? 'MEDIUM',
+  products: order.lines?.map((line) => ({
+    id: line.id,
+    name: line.product?.name || 'Sản phẩm',
+    sku: line.product?.sku || line.productId,
+    expectedQty: line.expectedQty,
+    receivedQty: line.receivedQty,
+    unit: line.product?.unit || line.unit || 'KG',
+  })) ?? [],
+})
 
 export default function InboundOrdersPageSimple() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter] = useState<string>('ALL')
 
   const { data: orders, isLoading, refetch } = useQuery<InboundOrder[]>({
     queryKey: ['inbound-orders'],
-    queryFn: fetchInboundOrders,
+    queryFn: async () => {
+      const res = await apiClient.get('/inbound')
+      return res.data as InboundOrder[]
+    },
     refetchInterval: 30000,
   })
 
   const receiveOrderMutation = useMutation({
-    mutationFn: ({ orderId, status }: { orderId: string, status: string }) => updateOrderStatus(orderId, status),
+    mutationFn: async ({ orderId, status }: { orderId: string, status: InboundStatus }) => {
+      await apiClient.put(`/inbound/${orderId}`, { status })
+      return { orderId, status }
+    },
     onSuccess: () => {
       toast.success('Đã cập nhật trạng thái đơn hàng')
-      refetch()
+      queryClient.invalidateQueries({ queryKey: ['inbound-orders'] })
     },
     onError: () => {
       toast.error('Không thể cập nhật trạng thái')
     },
   })
+
+  const mappedOrders = useMemo(() => (orders ?? []).map(mapInboundOrder), [orders])
 
   // Show loading state
   if (isLoading) {
@@ -135,8 +93,7 @@ export default function InboundOrdersPageSimple() {
     )
   }
 
-  // Filter orders by search term and status
-  const filteredOrders = orders?.filter(order => {
+  const filteredOrders = mappedOrders.filter(order => {
     const matchesSearch = order.orderNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.supplier?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.carrier?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -206,10 +163,10 @@ export default function InboundOrdersPageSimple() {
   }
 
   const statusCounts = {
-    total: orders?.length || 0,
-    pending: orders?.filter(o => o.status === 'PENDING').length || 0,
-    scheduled: orders?.filter(o => o.status === 'SCHEDULED').length || 0,
-    received: orders?.filter(o => o.status === 'COMPLETED').length || 0,
+    total: mappedOrders.length,
+    pending: mappedOrders.filter(o => o.status === 'PENDING').length,
+    scheduled: mappedOrders.filter(o => o.status === 'SCHEDULED').length,
+    received: mappedOrders.filter(o => o.status === 'COMPLETED').length,
   }
 
   return (

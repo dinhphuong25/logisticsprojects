@@ -23,6 +23,7 @@ import {
   MapPin,
 } from 'lucide-react'
 import { getAllProducts, getZoneForProduct, type Product as CatalogProduct } from '@/lib/products-data'
+import { apiClient } from '@/lib/api'
 
 interface Product {
   id: string
@@ -85,14 +86,6 @@ const CARRIERS = [
   { name: 'Fast Shipping Co.', contact: '1900 5678' },
 ]
 
-// Mock API call
-const createInboundOrder = async (data: OrderFormData) => {
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  const orderNo = `IB-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`
-  console.log('Creating inbound order with data:', data)
-  return { success: true, orderNo, id: `ib-${Math.floor(Math.random() * 1000)}` }
-}
-
 export default function CreateInboundOrderPage() {
   const navigate = useNavigate()
   const [searchProduct, setSearchProduct] = useState('')
@@ -120,7 +113,39 @@ export default function CreateInboundOrderPage() {
   })
 
   const createMutation = useMutation({
-    mutationFn: createInboundOrder,
+    mutationFn: async (data: OrderFormData) => {
+      const payload = {
+        warehouseId: 'wh-1',
+        supplier: data.supplier,
+        supplierContact: data.supplierContact,
+        carrier: data.carrier,
+        carrierContact: data.carrierContact,
+        trailerNo: data.trailerNo,
+        driverName: data.driverName,
+        driverPhone: data.driverPhone,
+        eta: new Date(data.eta).toISOString(),
+        priority: data.priority,
+        notes: data.notes,
+        status: 'SCHEDULED',
+        lines: data.products.map((product) => ({
+          productId: product.id,
+          expectedQty: product.expectedQty,
+          receivedQty: 0,
+          acceptedQty: 0,
+          rejectedQty: 0,
+          lotNo: product.batchNo,
+          expDate: product.expiryDate,
+          zone: product.zone,
+          product: {
+            name: product.name,
+            sku: product.sku,
+            unit: product.unit,
+          },
+        })),
+      }
+      const res = await apiClient.post('/inbound', payload)
+      return res.data
+    },
     onSuccess: (data) => {
       toast.success('Tạo đơn nhập hàng thành công!', {
         description: `Mã đơn hàng: ${data.orderNo}`

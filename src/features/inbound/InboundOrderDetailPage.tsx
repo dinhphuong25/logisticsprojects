@@ -19,124 +19,18 @@ import {
   FileText,
   Thermometer,
   Edit,
-  Trash2,
-  CheckCircle2,
   XCircle,
-  Camera,
   ClipboardCheck,
   PackageCheck,
   Box,
   TrendingUp,
-  Eye,
   Save
 } from 'lucide-react'
+import { apiClient } from '@/lib/api'
+import type { InboundOrder } from '@/types'
 
-interface InboundProduct {
-  id: string
-  name: string
-  sku: string
-  expectedQty: number
-  receivedQty: number
-  damagedQty: number
-  unit: string
-  batchNo?: string
-  expiryDate?: string
-  temperature?: number
-  zone?: string
-  notes?: string
-}
-
-interface InboundOrder {
-  id: string
-  orderNo: string
-  supplier: string
-  supplierContact: string
-  carrier: string
-  carrierContact: string
-  trailerNo: string
-  driverName: string
-  driverPhone: string
-  status: 'PENDING' | 'SCHEDULED' | 'RECEIVING' | 'QC' | 'PUTAWAY' | 'COMPLETED' | 'CANCELLED'
-  products: InboundProduct[]
-  eta: string
-  arrivedAt?: string
-  receivedAt?: string
-  completedAt?: string
-  priority: 'HIGH' | 'MEDIUM' | 'LOW'
-  notes?: string
-  receivedBy?: string
-  qcBy?: string
-  putawayBy?: string
-}
-
-const fetchInboundOrder = async (orderId: string): Promise<InboundOrder> => {
-  await new Promise(resolve => setTimeout(resolve, 600))
-  
-  const suppliers = [
-    { name: 'Fresh Seafood Co.', contact: '+84 912 345 678' },
-    { name: 'Global Meat Import', contact: '+84 913 456 789' },
-    { name: 'Premium Dairy Corp.', contact: '+84 914 567 890' }
-  ]
-  
-  const carriers = [
-    { name: 'DHL Express', contact: '1900 2045' },
-    { name: 'FedEx Logistics', contact: '1900 3456' }
-  ]
-  
-  const products: InboundProduct[] = [
-    {
-      id: 'p1',
-      name: 'Cá hồi đông lạnh',
-      sku: 'FISH-001',
-      expectedQty: 889,
-      receivedQty: 0,
-      damagedQty: 0,
-      unit: 'KG',
-      batchNo: 'BATCH-2025-001',
-      expiryDate: '2026-01-15',
-      temperature: -18.5,
-      zone: 'FRZ-A'
-    },
-    {
-      id: 'p2',
-      name: 'Thịt bò Wagyu',
-      sku: 'BEEF-001',
-      expectedQty: 913,
-      receivedQty: 0,
-      damagedQty: 0,
-      unit: 'KG',
-      batchNo: 'BATCH-2025-002',
-      expiryDate: '2026-02-20',
-      temperature: -20.2,
-      zone: 'FRZ-B'
-    }
-  ]
-  
-  const supplier = suppliers[parseInt(orderId.slice(-1)) % suppliers.length]
-  const carrier = carriers[parseInt(orderId.slice(-1)) % carriers.length]
-  
-  const status = orderId === 'ib-1' ? 'SCHEDULED' : 
-                 orderId === 'ib-2' ? 'RECEIVING' : 'SCHEDULED'
-  
-  return {
-    id: orderId,
-    orderNo: `IB-20251102-001`,
-    supplier: supplier.name,
-    supplierContact: supplier.contact,
-    carrier: carrier.name,
-    carrierContact: carrier.contact,
-    trailerNo: 'TRL-3088',
-    driverName: 'Nguyễn Văn A',
-    driverPhone: '+84 901 234 567',
-    status,
-    products,
-    eta: '2025-11-01T14:00:00',
-    arrivedAt: status === 'SCHEDULED' || status === 'RECEIVING' ? new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() : undefined,
-    priority: 'HIGH',
-    notes: 'Cần kiểm tra nhiệt độ kỹ lưỡng',
-    receivedBy: status === 'RECEIVING' ? 'Đình Phương' : undefined
-  }
-}
+type InboundStatus = InboundOrder['status']
+type InboundPriority = Required<Pick<InboundOrder, 'priority'>>['priority']
 
 export default function InboundOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -145,16 +39,19 @@ export default function InboundOrderDetailPage() {
   const [editMode, setEditMode] = useState(false)
   const [productQuantities, setProductQuantities] = useState<Record<string, { received: number, damaged: number }>>({})
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading } = useQuery<InboundOrder>({
     queryKey: ['inbound-order', orderId],
-    queryFn: () => fetchInboundOrder(orderId!),
+    queryFn: async () => {
+      const res = await apiClient.get(`/inbound/${orderId}`)
+      return res.data as InboundOrder
+    },
     enabled: !!orderId
   })
 
   const updateStatusMutation = useMutation({
-    mutationFn: async (newStatus: string) => {
-      await new Promise(resolve => setTimeout(resolve, 800))
-      return { success: true, status: newStatus }
+    mutationFn: async (newStatus: InboundStatus) => {
+      await apiClient.put(`/inbound/${orderId}`, { status: newStatus })
+      return newStatus
     },
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['inbound-order', orderId] })
@@ -166,9 +63,9 @@ export default function InboundOrderDetailPage() {
   })
 
   const saveQuantitiesMutation = useMutation({
-    mutationFn: async (data: typeof productQuantities) => {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return { success: true, data }
+    mutationFn: async (payload: { lines: InboundOrder['lines']; receivedQty: number }) => {
+      await apiClient.put(`/inbound/${orderId}`, payload)
+      return payload
     },
     onSuccess: () => {
       toast.success('Đã lưu số lượng nhận hàng')
@@ -180,7 +77,7 @@ export default function InboundOrderDetailPage() {
     }
   })
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: InboundStatus) => {
     const configs = {
       PENDING: { label: 'Chờ xử lý', color: 'bg-gray-500', icon: Clock },
       SCHEDULED: { label: 'Đã lên lịch', color: 'bg-blue-500', icon: Calendar },
@@ -193,11 +90,11 @@ export default function InboundOrderDetailPage() {
     return configs[status as keyof typeof configs] || configs.PENDING
   }
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: InboundStatus) => {
     return getStatusConfig(status).label
   }
 
-  const getPriorityConfig = (priority: string) => {
+  const getPriorityConfig = (priority: InboundPriority) => {
     const configs = {
       HIGH: { label: 'Cao', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-500' },
       MEDIUM: { label: 'Trung bình', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-500' },
@@ -236,18 +133,34 @@ export default function InboundOrderDetailPage() {
   }
 
   const handleSaveQuantities = () => {
-    saveQuantitiesMutation.mutate(productQuantities)
+    if (!order) return
+    const updatedLines = orderLines.map((line) => {
+      const overrides = productQuantities[line.id]
+      if (!overrides) return line
+      const received = overrides.received
+      const damaged = overrides.damaged
+      return {
+        ...line,
+        receivedQty: received,
+        acceptedQty: Math.max(received - damaged, 0),
+        rejectedQty: damaged,
+        damagedQty: damaged,
+      }
+    })
+    const updatedReceivedQty = updatedLines.reduce((sum, line) => sum + (line.receivedQty || 0), 0)
+    saveQuantitiesMutation.mutate({ lines: updatedLines, receivedQty: updatedReceivedQty })
   }
 
-  const totalExpected = order?.products.reduce((sum, p) => sum + p.expectedQty, 0) || 0
-  const totalReceived = order?.products.reduce((sum, p) => {
-    const qty = productQuantities[p.id]?.received || p.receivedQty
+  const orderLines = order?.lines ?? []
+  const totalExpected = orderLines.reduce((sum, line) => sum + (line.expectedQty || 0), 0)
+  const totalReceived = orderLines.reduce((sum, line) => {
+    const qty = productQuantities[line.id]?.received ?? line.receivedQty ?? 0
     return sum + qty
-  }, 0) || 0
-  const totalDamaged = order?.products.reduce((sum, p) => {
-    const qty = productQuantities[p.id]?.damaged || p.damagedQty
+  }, 0)
+  const totalDamaged = orderLines.reduce((sum, line) => {
+    const qty = productQuantities[line.id]?.damaged ?? line.rejectedQty ?? line.damagedQty ?? 0
     return sum + qty
-  }, 0) || 0
+  }, 0)
 
   if (isLoading) {
     return (
@@ -267,7 +180,7 @@ export default function InboundOrderDetailPage() {
   }
 
   const statusConfig = getStatusConfig(order.status)
-  const priorityConfig = getPriorityConfig(order.priority)
+  const priorityConfig = getPriorityConfig(order.priority ?? 'MEDIUM')
   const StatusIcon = statusConfig.icon
 
   return (
@@ -483,11 +396,11 @@ export default function InboundOrderDetailPage() {
                 {new Date(order.eta).toLocaleString('vi-VN')}
               </p>
             </div>
-            {order.arrivedAt && (
+            {order.actualArrival && (
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Thực tế đến</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  {new Date(order.arrivedAt).toLocaleString('vi-VN')}
+                  {new Date(order.actualArrival).toLocaleString('vi-VN')}
                 </p>
               </div>
             )}
@@ -507,7 +420,7 @@ export default function InboundOrderDetailPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5 text-blue-600" />
-              Danh sách sản phẩm ({order.products.length})
+              Danh sách sản phẩm ({orderLines.length})
             </CardTitle>
             {order.status === 'RECEIVING' && !editMode && (
               <Button
@@ -544,43 +457,55 @@ export default function InboundOrderDetailPage() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
-            {order.products.map((product) => {
-              const receivedQty = productQuantities[product.id]?.received ?? product.receivedQty
-              const damagedQty = productQuantities[product.id]?.damaged ?? product.damagedQty
-              const percentage = (receivedQty / product.expectedQty) * 100
+            {orderLines.map((line) => {
+              const product = line.product
+              const expectedQty = line.expectedQty || 0
+              const receivedQty = productQuantities[line.id]?.received ?? line.receivedQty ?? 0
+              const damagedQty = productQuantities[line.id]?.damaged ?? line.rejectedQty ?? line.damagedQty ?? 0
+              const percentage = expectedQty > 0 ? (receivedQty / expectedQty) * 100 : 0
 
               return (
                 <div
-                  key={product.id}
+                  key={line.id}
                   className="p-6 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200 dark:border-gray-700"
                 >
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Product Info */}
                     <div className="lg:col-span-2">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{product.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                        {product?.name || 'Sản phẩm'}
+                      </h3>
                       <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span>SKU: <strong>{product.sku}</strong></span>
-                        <span>Batch: <strong>{product.batchNo}</strong></span>
+                        <span>SKU: <strong>{product?.sku || line.productId}</strong></span>
+                        {line.lotNo && (
+                          <span>Batch: <strong>{line.lotNo}</strong></span>
+                        )}
                       </div>
                       <div className="mt-3 flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Thermometer className="w-4 h-4 text-blue-500" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {product.temperature}°C
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-green-500" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {product.zone}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-orange-500" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            HSD: {product.expiryDate}
-                          </span>
-                        </div>
+                        {(line.temperature ?? product?.temperature) && (
+                          <div className="flex items-center gap-2">
+                            <Thermometer className="w-4 h-4 text-blue-500" />
+                            <span className="text-gray-600 dark:text-gray-400">
+                              {(line.temperature ?? product?.temperature)?.toString()}°C
+                            </span>
+                          </div>
+                        )}
+                        {(line.zone ?? product?.zone) && (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-green-500" />
+                            <span className="text-gray-600 dark:text-gray-400">
+                              {line.zone ?? product?.zone}
+                            </span>
+                          </div>
+                        )}
+                        {line.expDate && (
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-orange-500" />
+                            <span className="text-gray-600 dark:text-gray-400">
+                              HSD: {line.expDate}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -590,9 +515,9 @@ export default function InboundOrderDetailPage() {
                         <div>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Dự kiến</p>
                           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {product.expectedQty}
+                            {expectedQty}
                           </p>
-                          <p className="text-xs text-gray-500">{product.unit}</p>
+                          <p className="text-xs text-gray-500">{product?.unit ?? line.unit ?? 'KG'}</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Đã nhận</p>
@@ -600,13 +525,13 @@ export default function InboundOrderDetailPage() {
                             <Input
                               type="number"
                               min="0"
-                              max={product.expectedQty}
+                              max={expectedQty}
                               value={receivedQty}
                               onChange={(e) => setProductQuantities(prev => ({
                                 ...prev,
-                                [product.id]: {
+                                [line.id]: {
                                   received: parseInt(e.target.value) || 0,
-                                  damaged: prev[product.id]?.damaged || 0
+                                  damaged: prev[line.id]?.damaged ?? (line.rejectedQty ?? 0)
                                 }
                               }))}
                               className="w-24"
@@ -614,12 +539,12 @@ export default function InboundOrderDetailPage() {
                           ) : (
                             <>
                               <p className={`text-2xl font-bold ${
-                                receivedQty === product.expectedQty ? 'text-green-600' :
+                                expectedQty > 0 && receivedQty === expectedQty ? 'text-green-600' :
                                 receivedQty > 0 ? 'text-yellow-600' : 'text-gray-400'
                               }`}>
                                 {receivedQty}
                               </p>
-                              <p className="text-xs text-gray-500">{product.unit}</p>
+                              <p className="text-xs text-gray-500">{product?.unit ?? line.unit ?? 'KG'}</p>
                             </>
                           )}
                         </div>
@@ -632,8 +557,8 @@ export default function InboundOrderDetailPage() {
                               value={damagedQty}
                               onChange={(e) => setProductQuantities(prev => ({
                                 ...prev,
-                                [product.id]: {
-                                  received: prev[product.id]?.received || 0,
+                                [line.id]: {
+                                  received: prev[line.id]?.received ?? (line.receivedQty ?? 0),
                                   damaged: parseInt(e.target.value) || 0
                                 }
                               }))}
@@ -646,7 +571,7 @@ export default function InboundOrderDetailPage() {
                               }`}>
                                 {damagedQty}
                               </p>
-                              <p className="text-xs text-gray-500">{product.unit}</p>
+                              <p className="text-xs text-gray-500">{product?.unit ?? line.unit ?? 'KG'}</p>
                             </>
                           )}
                         </div>

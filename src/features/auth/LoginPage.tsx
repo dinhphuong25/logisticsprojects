@@ -49,7 +49,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 px-4 py-10 sm:px-8 lg:px-16">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 px-4 py-8 sm:px-6 lg:px-12">
       {/* Animated Background */}
       <div className="absolute inset-0">
         {/* Gradient Mesh */}
@@ -73,10 +73,10 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col-reverse gap-12 lg:flex-row lg:items-stretch">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col-reverse gap-10 lg:flex-row lg:items-start xl:gap-16">
         {/* Left Content */}
-        <div className="w-full space-y-8 text-white lg:w-1/2">
-          <div className="inline-flex items-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 backdrop-blur">
+        <div className="w-full space-y-8 text-center text-white lg:w-1/2 lg:text-left">
+          <div className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-5 py-3 backdrop-blur lg:justify-start">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
               <Zap className="h-5 w-5 text-white" />
             </div>
@@ -96,16 +96,16 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <ul className="space-y-3">
+          <ul className="space-y-3 max-w-xl mx-auto lg:mx-0">
             {keyPoints.map((point) => (
-              <li key={point} className="flex items-start gap-3 text-base text-white/85">
+              <li key={point} className="flex items-start gap-3 text-left text-base text-white/85 lg:text-left">
                 <span className="mt-2 h-2 w-2 rounded-full bg-gradient-to-br from-blue-400 to-purple-400" />
                 <span>{point}</span>
               </li>
             ))}
           </ul>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 sm:text-left max-w-lg mx-auto lg:mx-0">
             {simpleStats.map((stat) => (
               <div
                 key={stat.label}
@@ -119,9 +119,9 @@ export default function LoginPage() {
         </div>
 
         {/* Right Content - Login Form */}
-        <div className="w-full lg:w-5/12">
-          <Card className="relative overflow-hidden border border-slate-100/60 bg-white/95 shadow-xl">
-            <CardContent className="space-y-8 px-8 py-10">
+        <div className="w-full lg:w-5/12 flex justify-center">
+          <Card className="relative w-full max-w-md overflow-hidden border border-slate-100/60 bg-white/95 shadow-xl backdrop-blur-sm">
+            <CardContent className="space-y-8 px-6 py-8 sm:px-8 sm:py-10">
               <div className="space-y-2 text-center text-slate-900">
                 <p className="text-xs font-semibold uppercase tracking-[0.4em] text-blue-500">Đăng nhập</p>
                 <h2 className="text-2xl font-black">Truy cập bảng điều khiển</h2>

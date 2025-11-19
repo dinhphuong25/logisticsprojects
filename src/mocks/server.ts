@@ -337,16 +337,25 @@ export function makeServer() {
         orderNo: 'IB-20251102-001',
         warehouseId: wh1.id,
         supplier: 'Fresh Seafood Co.',
+        supplierContact: '+84 912 345 678',
         carrier: 'DHL Cold Chain',
+        carrierContact: '1900 2045',
         trailerNo: 'TRL-1234',
+        driverName: 'Nguyễn Văn A',
+        driverPhone: '0901 234 567',
         eta: new Date(Date.now() + 86400000).toISOString(),
         status: 'PENDING',
+        priority: 'HIGH',
+        notes: 'Yêu cầu kiểm tra nhanh khi hàng đến dock 3',
         lines: [
           {
             id: 'line-1',
             productId: 'prod-1',
             expectedQty: 500,
             receivedQty: 0,
+            acceptedQty: 0,
+            rejectedQty: 0,
+            lotNo: 'BATCH-2025-SEA-01',
             product: { name: 'Salmon Fillet', sku: 'SKU-001', unit: 'KG' },
           },
         ],
@@ -361,16 +370,24 @@ export function makeServer() {
         orderNo: 'IB-20251102-002',
         warehouseId: wh1.id,
         supplier: 'Wagyu Beef Ltd',
+        supplierContact: '+81 987 654 321',
         carrier: 'FedEx Frozen',
+        carrierContact: '1900 456 789',
         trailerNo: 'TRL-5678',
+        driverName: 'Lê Văn B',
+        driverPhone: '0912 345 678',
         eta: new Date(Date.now() + 172800000).toISOString(),
         status: 'SCHEDULED',
+        priority: 'MEDIUM',
         lines: [
           {
             id: 'line-2',
             productId: 'prod-2',
             expectedQty: 300,
             receivedQty: 0,
+            acceptedQty: 0,
+            rejectedQty: 0,
+            lotNo: 'BATCH-2025-BEEF-01',
             product: { name: 'Wagyu Beef', sku: 'SKU-002', unit: 'KG' },
           },
         ],
@@ -385,16 +402,27 @@ export function makeServer() {
         orderNo: 'IB-20251101-015',
         warehouseId: wh1.id,
         supplier: 'Frozen Veg Corp',
+        supplierContact: '+65 888 222 333',
         carrier: 'Local Transport',
+        carrierContact: '0933 222 111',
         trailerNo: 'TRL-9999',
+        driverName: 'Trần Minh C',
+        driverPhone: '0977 888 666',
         eta: new Date(Date.now() - 3600000).toISOString(),
+        actualArrival: new Date(Date.now() - 3200000).toISOString(),
         status: 'COMPLETED',
+        priority: 'LOW',
+        receivedBy: 'Tạ Quốc Dũng',
+        completedAt: new Date(Date.now() - 1800000).toISOString(),
         lines: [
           {
             id: 'line-3',
             productId: 'prod-3',
             expectedQty: 800,
             receivedQty: 800,
+            acceptedQty: 790,
+            rejectedQty: 10,
+            lotNo: 'BATCH-2025-VEG-01',
             product: { name: 'Mixed Vegetables', sku: 'SKU-003', unit: 'KG' },
           },
         ],
@@ -402,6 +430,7 @@ export function makeServer() {
         receivedQty: 800,
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         createdBy: 'admin@wms.com',
+        notes: 'Đã hoàn thành và chuyển vào zone FROZEN',
       })
 
       server.create('inbound', {
@@ -409,17 +438,25 @@ export function makeServer() {
         orderNo: 'IB-20251102-003',
         warehouseId: wh1.id,
         supplier: 'Ocean Fresh Ltd.',
+        supplierContact: '+84 935 888 999',
         carrier: 'Cold Chain Express',
+        carrierContact: '1900 9988',
         trailerNo: 'TRL-4444',
+        driverName: 'Huỳnh Tấn D',
+        driverPhone: '0903 456 111',
         eta: new Date(Date.now() - 1800000).toISOString(),
-        arrivalTime: new Date(Date.now() - 1800000).toISOString(),
+        actualArrival: new Date(Date.now() - 1800000).toISOString(),
         status: 'RECEIVING',
+        priority: 'HIGH',
         lines: [
           {
             id: 'line-4',
             productId: 'prod-1',
             expectedQty: 450,
             receivedQty: 280,
+            acceptedQty: 270,
+            rejectedQty: 10,
+            lotNo: 'BATCH-2025-SEA-02',
             product: { name: 'Salmon Fillet', sku: 'SKU-001', unit: 'KG' },
           },
         ],
@@ -434,16 +471,24 @@ export function makeServer() {
         orderNo: 'IB-20251102-004',
         warehouseId: wh1.id,
         supplier: 'Premium Meat Suppliers',
+        supplierContact: '+84 922 111 000',
         carrier: 'Frozen Logistics',
+        carrierContact: '1900 8899',
         trailerNo: 'TRL-5555',
+        driverName: 'Phạm Văn E',
+        driverPhone: '0966 777 222',
         eta: new Date(Date.now() + 21600000).toISOString(),
         status: 'SCHEDULED',
+        priority: 'MEDIUM',
         lines: [
           {
             id: 'line-5',
             productId: 'prod-2',
             expectedQty: 380,
             receivedQty: 0,
+            acceptedQty: 0,
+            rejectedQty: 0,
+            lotNo: 'BATCH-2025-BEEF-02',
             product: { name: 'Wagyu Beef', sku: 'SKU-002', unit: 'KG' },
           },
         ],
@@ -715,16 +760,46 @@ export function makeServer() {
         return schema.db.inbounds
       })
 
+      this.get('/inbound/:id', (schema: any, request) => {
+        const order = schema.db.inbounds.find(request.params.id)
+        if (!order) {
+          return new Response(404, {}, { message: 'Inbound order not found' })
+        }
+        return order
+      })
+
       this.post('/inbound', (schema: any, request) => {
         const attrs = JSON.parse(request.requestBody)
+        const newOrderId = `inb-${Date.now()}`
+        const lineItems = (attrs.lines || []).map((line: any, index: number) => ({
+          id: line.id || `line-${Date.now()}-${index}`,
+          inboundOrderId: newOrderId,
+          productId: line.productId,
+          expectedQty: line.expectedQty,
+          receivedQty: line.receivedQty || 0,
+          acceptedQty: line.acceptedQty ?? 0,
+          rejectedQty: line.rejectedQty ?? 0,
+          lotNo: line.lotNo || null,
+          product: line.product || null,
+          unit: line.unit || line.product?.unit || 'KG',
+          damagedQty: line.rejectedQty ?? 0,
+          zone: line.zone || null,
+          temperature: line.temperature || null,
+        }))
+
         const newOrder = {
-          id: `inb-${Date.now()}`,
+          id: newOrderId,
           ...attrs,
           createdAt: new Date().toISOString(),
           createdBy: 'admin@wms.com',
-          totalQty: attrs.lines?.reduce((sum: number, line: any) => sum + line.expectedQty, 0) || 0,
+          lines: lineItems,
+          totalQty: lineItems.reduce((sum: number, line: any) => sum + (line.expectedQty || 0), 0),
           receivedQty: 0,
         }
+        newOrder.lines = newOrder.lines.map((line: any) => ({
+          ...line,
+          inboundOrderId: newOrderId,
+        }))
         const order = schema.db.inbounds.insert(newOrder)
         return order
       })

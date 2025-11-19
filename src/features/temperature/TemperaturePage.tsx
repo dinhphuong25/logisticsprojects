@@ -160,9 +160,9 @@ export default function TemperaturePage() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+    <div className="max-w-6xl mx-auto w-full space-y-4 md:space-y-6 px-3 sm:px-4 lg:px-0 py-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
             Giám sát nhiệt độ
@@ -172,24 +172,24 @@ export default function TemperaturePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {activeTab === 'monitoring' ? (
             <>
-              <Button variant="outline" size="sm" className="text-xs md:text-sm">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs md:text-sm">
                 <Filter className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                 <span className="hidden sm:inline">Bộ lọc</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => refetch()} className="text-xs md:text-sm">
+              <Button variant="outline" size="sm" onClick={() => refetch()} className="flex-1 sm:flex-none text-xs md:text-sm">
                 <RefreshCw className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                 <span className="hidden sm:inline">Làm mới</span>
               </Button>
-              <Button size="sm" className="bg-gradient-to-r from-blue-600 to-cyan-600 text-xs md:text-sm">
+              <Button size="sm" className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-cyan-600 text-xs md:text-sm">
                 <Download className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                 <span className="hidden sm:inline">Xuất báo cáo</span>
               </Button>
             </>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['zones'] })}>
+            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['zones'] })} className="w-full sm:w-auto">
               <RefreshCw className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
               <span className="hidden sm:inline">Làm mới</span>
             </Button>
@@ -238,7 +238,7 @@ export default function TemperaturePage() {
       {activeTab === 'monitoring' ? (
         <>
           {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
           <CardContent className="p-3 md:p-5">
             <div className="flex items-center justify-between mb-1 md:mb-2">
@@ -281,7 +281,7 @@ export default function TemperaturePage() {
       </div>
 
       {/* Temperature Sensors Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {temperatureSensors.map((sensor) => {
           const tempStatus = getTempStatus(sensor.currentValue, sensor.zone?.tempTarget)
           const StatusIcon = tempStatus.icon
@@ -412,7 +412,7 @@ export default function TemperaturePage() {
         <>
           {/* Settings Tab Content */}
           {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
               <CardContent className="p-3 md:p-5">
                 <div className="flex items-center justify-between mb-1 md:mb-2">
@@ -457,7 +457,7 @@ export default function TemperaturePage() {
           </div>
 
           {/* Configuration List */}
-          <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-6">
             <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
               Cấu hình theo khu vực
             </h2>
@@ -471,7 +471,7 @@ export default function TemperaturePage() {
                 return (
                   <Card key={config.id} className="border-0 shadow-lg hover:shadow-xl transition-all">
                     <CardHeader className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800/50">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                             <Thermometer className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -629,7 +629,7 @@ export default function TemperaturePage() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {isEditing ? (
                           <>
                             <Button
