@@ -482,19 +482,19 @@ export default function InboundOrderDetailPage() {
                         )}
                       </div>
                       <div className="mt-3 flex items-center gap-4 text-sm">
-                        {(line.temperature ?? product?.temperature) && (
+                        {typeof line.temperature === 'number' && (
                           <div className="flex items-center gap-2">
                             <Thermometer className="w-4 h-4 text-blue-500" />
                             <span className="text-gray-600 dark:text-gray-400">
-                              {(line.temperature ?? product?.temperature)?.toString()}°C
+                              {line.temperature}°C
                             </span>
                           </div>
                         )}
-                        {(line.zone ?? product?.zone) && (
+                        {line.zone && (
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-green-500" />
                             <span className="text-gray-600 dark:text-gray-400">
-                              {line.zone ?? product?.zone}
+                              {line.zone}
                             </span>
                           </div>
                         )}

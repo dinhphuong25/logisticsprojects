@@ -153,13 +153,14 @@ export default function InboundOrdersPageSimple() {
     )
   }
 
-  const getPriorityBadge = (priority: InboundOrder['priority']) => {
-    const config = {
+  const getPriorityBadge = (priority: InboundPriority = 'MEDIUM') => {
+    const config: Record<InboundPriority, { label: string; className: string }> = {
       HIGH: { label: 'Ưu tiên cao', className: 'bg-red-500 text-white' },
       MEDIUM: { label: 'Trung bình', className: 'bg-yellow-500 text-white' },
       LOW: { label: 'Thấp', className: 'bg-gray-500 text-white' },
     }
-    return <Badge className={config[priority].className}>{config[priority].label}</Badge>
+    const data = config[priority] ?? config.MEDIUM
+    return <Badge className={data.className}>{data.label}</Badge>
   }
 
   const statusCounts = {
