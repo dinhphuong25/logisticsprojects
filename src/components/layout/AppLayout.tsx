@@ -41,6 +41,9 @@ export default function AppLayout() {
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 © 2025 All Rights Reserved
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">
+                Cảm ơn cô và các bạn đã ghé tham quan!
+              </p>
             </div>
           </footer>
         </main>

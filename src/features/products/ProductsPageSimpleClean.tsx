@@ -114,7 +114,7 @@ export default function ProductsPageSimpleClean() {
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">{stats.blockchainVerified}</p>
-              <p className="text-sm text-gray-500">Blockchain verified</p>
+              <p className="text-sm text-gray-500">Đã xác minh Blockchain</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">{stats.lowStock}</p>

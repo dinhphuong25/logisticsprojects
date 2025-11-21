@@ -75,29 +75,29 @@ export default function SmartAnalyticsDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-[1600px] mx-auto">
+    <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 p-8 text-white"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 p-6 sm:p-8 text-white"
       >
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center">
-                <Brain className="w-8 h-8" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center">
+                <Brain className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <div>
-                <h1 className="text-4xl font-black mb-2">AI Analytics Dashboard</h1>
-                <p className="text-blue-100">Phân tích thông minh được hỗ trợ bởi Machine Learning</p>
+                <h1 className="text-3xl sm:text-4xl font-black mb-2">AI Analytics Dashboard</h1>
+                <p className="text-blue-100 text-sm sm:text-base">Phân tích thông minh được hỗ trợ bởi Machine Learning</p>
               </div>
             </div>
             
             <Button
               onClick={loadAIInsights}
               disabled={isAnalyzing}
-              className="bg-white text-purple-600 hover:bg-blue-50 font-bold px-6 py-6 rounded-xl shadow-2xl"
+              className="bg-white text-purple-600 hover:bg-blue-50 font-bold px-4 py-4 sm:px-6 sm:py-6 rounded-xl shadow-2xl w-full sm:w-auto"
             >
               {isAnalyzing ? (
                 <>
@@ -114,7 +114,7 @@ export default function SmartAnalyticsDashboard() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {[
               { icon: Brain, label: 'AI Insights', value: insights.length, color: 'from-purple-500 to-pink-500' },
               { icon: Target, label: 'Opportunities', value: insights.filter(i => i.type === 'opportunity').length, color: 'from-green-500 to-emerald-500' },
@@ -166,9 +166,9 @@ export default function SmartAnalyticsDashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column - Insights */}
-        <div className="col-span-2 space-y-6">
+        <div className="space-y-6 xl:col-span-2">
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export default function SmartAnalyticsDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
                 <AnimatePresence>
                   {insights.map((insight, index) => {
                     const Icon = getTypeIcon(insight.type)
@@ -401,7 +401,7 @@ export default function SmartAnalyticsDashboard() {
                     <Rocket className="w-5 h-5 text-purple-600" />
                     Hành động được đề xuất
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {selectedInsight.suggestedActions.map((action, index) => (
                       <Button
                         key={index}

@@ -49,18 +49,18 @@ export default function ReportsPage() {
   ]
 
   const quickStats = [
-    { label: 'Reports Generated', value: '156', trend: '+12%' },
-    { label: 'Avg Processing Time', value: '2.3s', trend: '-8%' },
-    { label: 'Export Downloads', value: '89', trend: '+24%' },
+    { label: 'Báo cáo đã tạo', value: '156', trend: '+12%' },
+    { label: 'Thời gian xử lý trung bình', value: '2.3s', trend: '-8%' },
+    { label: 'Lượt tải xuống', value: '89', trend: '+24%' },
     { label: 'Scheduled Reports', value: '12', trend: '0%' },
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-indigo-800 to-purple-800 dark:from-white dark:via-indigo-200 dark:to-purple-200 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 via-indigo-800 to-purple-800 dark:from-white dark:via-indigo-200 dark:to-purple-200 bg-clip-text text-transparent">
             {t('Reports & Analytics')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
@@ -68,12 +68,12 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Calendar className="w-4 h-4 mr-2" />
             Schedule Report
           </Button>
-          <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+          <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 w-full sm:w-auto">
             <FileText className="w-4 h-4 mr-2" />
             New Report
           </Button>
@@ -81,7 +81,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickStats.map((stat, index) => (
           <Card key={index} className="animate-slide-in" style={{ animationDelay: `${index * 0.1}s` }}>
             <CardContent className="p-6">
@@ -103,7 +103,7 @@ export default function ReportsPage() {
           <CardTitle>Select Report Period</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {['today', 'week', 'month', 'quarter', 'year'].map((period) => (
               <Button
                 key={period}

@@ -350,11 +350,11 @@ export default function OutboundOrderDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate('/outbound')}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button variant="outline" onClick={() => navigate('/outbound')} className="w-full xs:w-auto">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
           </Button>
@@ -371,7 +371,7 @@ export default function OutboundOrderDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           {actionButton}
           <Button variant="outline">
             <Save className="w-4 h-4 mr-2" />
@@ -406,17 +406,17 @@ export default function OutboundOrderDetailPage() {
       )}
 
       {/* Progress Timeline */}
-      <Card className="border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+      <Card className="border-0 shadow-lg overflow-hidden">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             {progressSteps.map((step, index) => {
               const Icon = step.icon
               const isActive = index <= currentStepIndex
               const isCurrent = index === currentStepIndex
               
               return (
-                <div key={step.status} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center">
+                <div key={step.status} className="flex items-center">
+                  <div className="flex flex-col items-center w-24">
                     <div className={`
                       w-12 h-12 rounded-full flex items-center justify-center transition-all
                       ${isActive 

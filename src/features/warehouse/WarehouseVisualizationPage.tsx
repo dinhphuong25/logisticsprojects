@@ -612,7 +612,7 @@ export default function WarehouseVisualizationPage() {
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                      <span className="font-medium">Active Worker</span>
+                      <span className="font-medium">Nhân viên đang làm việc</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-blue-500"></div>

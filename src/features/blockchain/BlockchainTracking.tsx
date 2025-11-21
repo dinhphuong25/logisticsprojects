@@ -132,7 +132,7 @@ export function BlockchainTracking() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {isScanning && (
           <QRScanner
@@ -157,18 +157,18 @@ export function BlockchainTracking() {
         )}
 
         {/* Hero Header with Premium Gradient */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-8 shadow-2xl">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-6 sm:p-8 shadow-2xl">
           <div className="absolute inset-0 bg-grid-white/10"></div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                    <Shield className="w-10 h-10 animate-pulse" />
+                    <Shield className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-bold">Blockchain Tracking</h1>
-                    <p className="text-indigo-100 text-lg mt-1">
+                    <h1 className="text-3xl sm:text-4xl font-bold">Blockchain Tracking</h1>
+                    <p className="text-indigo-100 text-base sm:text-lg mt-1">
                       Xác thực và theo dõi sản phẩm trên blockchain
                     </p>
                   </div>
@@ -186,7 +186,7 @@ export function BlockchainTracking() {
               </div>
 
               {/* Network Status Card */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 min-w-[280px]">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 min-w-[260px]">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm font-medium text-indigo-100">Blockchain Network</span>
                   <Badge className={`${networkStatus.connected ? 'bg-green-500' : 'bg-red-500'} text-white border-0`}>
@@ -238,7 +238,7 @@ export function BlockchainTracking() {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 lg:flex-row">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
@@ -249,40 +249,42 @@ export function BlockchainTracking() {
                   onKeyPress={(e) => e.key === 'Enter' && handleVerify()}
                 />
               </div>
-              <Button
-                variant="outline"
-                onClick={() => setIsScanning(true)}
-                className="px-6 h-12 border-2 hover:bg-indigo-50 hover:border-indigo-300"
-              >
-                <Scan className="w-5 h-5 mr-2" />
-                Quét QR
-              </Button>
-              <Button
-                onClick={() => handleVerify()}
-                disabled={!productId.trim() || isLoading}
-                className="px-8 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-              >
-                {isLoading ? (
-                  <>
-                    <Activity className="w-5 h-5 mr-2 animate-spin" />
-                    Đang xác thực...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-5 h-5 mr-2" />
-                    Xác thực
-                  </>
-                )}
-              </Button>
-              {verificationResult?.verified && verificationResult.product && (
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => setShowQRModal(true)}
-                  className="px-6 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  variant="outline"
+                  onClick={() => setIsScanning(true)}
+                  className="px-6 h-12 border-2 hover:bg-indigo-50 hover:border-indigo-300 w-full sm:w-auto"
                 >
-                  <QrCode className="w-5 h-5 mr-2" />
-                  Tạo QR
+                  <Scan className="w-5 h-5 mr-2" />
+                  Quét QR
                 </Button>
-              )}
+                <Button
+                  onClick={() => handleVerify()}
+                  disabled={!productId.trim() || isLoading}
+                  className="px-8 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 w-full sm:w-auto"
+                >
+                  {isLoading ? (
+                    <>
+                      <Activity className="w-5 h-5 mr-2 animate-spin" />
+                      Đang xác thực...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-5 h-5 mr-2" />
+                      Xác thực
+                    </>
+                  )}
+                </Button>
+                {verificationResult?.verified && verificationResult.product && (
+                  <Button
+                    onClick={() => setShowQRModal(true)}
+                    className="px-6 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 w-full sm:w-auto"
+                  >
+                    <QrCode className="w-5 h-5 mr-2" />
+                    Tạo QR
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-yellow-500" />
@@ -532,8 +534,8 @@ export function BlockchainTracking() {
                       </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">Status</span>
-                          <Badge className="bg-green-500 text-white">Active</Badge>
+                          <span className="text-sm text-gray-600">Trạng thái</span>
+                          <Badge className="bg-green-500 text-white">Hoạt động</Badge>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm text-gray-600">Verification</span>

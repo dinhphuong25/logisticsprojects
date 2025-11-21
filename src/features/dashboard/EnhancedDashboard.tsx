@@ -117,7 +117,7 @@ export default function EnhancedDashboard() {
       setRealtimeMetrics(prev => [
         {
           id: Date.now().toString(),
-          label: 'Active Orders',
+          label: 'Đơn hàng đang xử lý',
           value: Math.floor(Math.random() * 50) + 10,
           change: Math.random() * 10 - 5,
           trend: Math.random() > 0.5 ? 'up' : 'down',
@@ -386,9 +386,9 @@ export default function EnhancedDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           {isLiveMode && (
             <Badge className="bg-green-500 text-white animate-pulse text-base px-4 py-2">
@@ -397,7 +397,7 @@ export default function EnhancedDashboard() {
             </Badge>
           )}
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => setIsLiveMode(!isLiveMode)}
@@ -479,9 +479,9 @@ export default function EnhancedDashboard() {
       {realtimeMetrics.length > 0 && (
         <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800">
           <CardContent className="p-4">
-            <div className="flex items-center gap-4 overflow-x-auto">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center overflow-x-auto">
               <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0" />
-              <div className="flex gap-6">
+              <div className="flex gap-6 min-w-full sm:min-w-0">
                 {realtimeMetrics.slice(0, 3).map(metric => (
                   <div key={metric.id} className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -763,8 +763,8 @@ function OrderDistribution({ stats }: { stats: DashboardStats }) {
   const data = [
     { label: 'Inbound', value: stats.orders.inbound, color: 'bg-blue-500' },
     { label: 'Outbound', value: stats.orders.outbound, color: 'bg-green-500' },
-    { label: 'Pending', value: stats.orders.pending, color: 'bg-yellow-500' },
-    { label: 'Completed', value: stats.orders.completed, color: 'bg-purple-500' }
+    { label: 'Chờ xử lý', value: stats.orders.pending, color: 'bg-yellow-500' },
+    { label: 'Hoàn thành', value: stats.orders.completed, color: 'bg-purple-500' }
   ]
 
   const total = data.reduce((sum, item) => sum + item.value, 0)

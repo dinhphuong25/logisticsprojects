@@ -47,7 +47,7 @@ export const ProductSummary = () => {
         
         <div className="text-center">
           <div className="text-3xl font-bold text-green-300">{summary.blockchainVerified}</div>
-          <div className="text-sm opacity-90">Blockchain verified</div>
+          <div className="text-sm opacity-90">Đã xác minh Blockchain</div>
         </div>
       </div>
       

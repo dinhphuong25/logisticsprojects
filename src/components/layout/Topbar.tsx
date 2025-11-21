@@ -3,7 +3,7 @@ import { useAuthStore, useWarehouseStore, useUIStore } from '@/stores'
 import { Button } from '@/components/ui/button'
 import { CommandPalette } from '@/components/ui/command-palette'
 import { NotificationCenter } from '@/components/ui/notification-center'
-import { LogOut, Building2, Activity, Menu, X } from 'lucide-react'
+import { LogOut, Building2, Activity, Menu, X, Snowflake } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function Topbar() {
@@ -24,7 +24,7 @@ export default function Topbar() {
       </div>
 
       <div className="relative z-10 h-full px-3 sm:px-6 flex items-center justify-between">
-        {/* Left side - Menu Toggle + Warehouse Info */}
+        {/* Left side - Menu Toggle + Logo + Warehouse Info */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Menu Toggle Button */}
           <Button
@@ -42,6 +42,24 @@ export default function Topbar() {
               <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400 hidden lg:block" />
             )}
           </Button>
+
+          {/* Logo & Brand Name - Only visible on mobile */}
+          <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 lg:hidden">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 rounded-xl blur-md opacity-60 group-hover:opacity-80 transition-all duration-300"></div>
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                <Snowflake className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-sm sm:text-base font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent truncate">
+                ECOFRESH
+              </h1>
+              <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 dark:text-gray-400 tracking-wide truncate">
+                COLD CHAIN MANAGEMENT
+              </p>
+            </div>
+          </div>
 
           {/* Warehouse Info & System Status */}
           {currentWarehouse && (
@@ -100,7 +118,7 @@ export default function Topbar() {
                 <div className="flex items-center gap-1.5 justify-end mt-0.5">
                   <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 capitalize truncate">{user?.role}</span>
                   <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm">
-                    Online
+                    Trực tuyến
                   </span>
                 </div>
               </div>

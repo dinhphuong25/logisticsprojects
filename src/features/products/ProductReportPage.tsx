@@ -81,11 +81,11 @@ export const ProductReportPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <ProductNavigation />
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="p-4 sm:p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             BÁO CÁO DANH SÁCH SẢN PHẨM NÔNG NGHIỆP ĐBSCL
           </h1>
           <p className="text-gray-600">
@@ -102,7 +102,7 @@ export const ProductReportPage = () => {
         </div>
 
         {/* Summary Statistics */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <TrendingUp className="mr-2 text-blue-600" />
             Tổng Quan Hệ Thống
@@ -122,13 +122,13 @@ export const ProductReportPage = () => {
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">{reportData.blockchainVerified.length}</div>
-              <div className="text-sm text-gray-600">Blockchain verified</div>
+              <div className="text-sm text-gray-600">Đã xác minh Blockchain</div>
             </div>
           </div>
         </div>
 
         {/* Products by Category */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <Package className="mr-2 text-green-600" />
             Danh Sách Sản Phẩm Theo Danh Mục
@@ -220,7 +220,7 @@ export const ProductReportPage = () => {
         </div>
 
         {/* Products by Province */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <MapPin className="mr-2 text-blue-600" />
             Phân Bố Sản Phẩm Theo Tỉnh Thành
@@ -255,7 +255,7 @@ export const ProductReportPage = () => {
 
         {/* Low Stock Alert */}
         {reportData.lowStockItems.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
             <h2 className="text-xl font-bold text-red-600 mb-4 flex items-center">
               <AlertCircle className="mr-2" />
               Cảnh Báo Sắp Hết Hàng ({reportData.lowStockItems.length} sản phẩm)
@@ -297,7 +297,7 @@ export const ProductReportPage = () => {
         )}
 
         {/* Footer */}
-        <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
           <p className="text-gray-600 text-sm">
             Báo cáo được tạo tự động bởi Hệ thống quản lý chuỗi lạnh ĐBSCL
           </p>

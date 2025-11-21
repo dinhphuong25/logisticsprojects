@@ -362,7 +362,7 @@ export default function SettingsPage() {
                     variant={warehouse.autoAlertEnabled ? 'default' : 'secondary'}
                     className={`${warehouse.autoAlertEnabled ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' : ''} text-xs flex-shrink-0`}
                   >
-                    {warehouse.autoAlertEnabled ? '✓ Active' : 'Inactive'}
+                    {warehouse.autoAlertEnabled ? '✓ Hoạt động' : 'Không hoạt động'}
                   </Badge>
                 </div>
               </CardHeader>
@@ -679,7 +679,7 @@ export default function SettingsPage() {
                 <span className="font-semibold">2.4 GB</span>
               </div>
               <div className="flex justify-between text-xs sm:text-sm">
-                <span className="text-gray-600">Active Users</span>
+                <span className="text-gray-600">Người dùng đang hoạt động</span>
                 <span className="font-semibold">3</span>
               </div>
               <div className="flex justify-between text-xs sm:text-sm">

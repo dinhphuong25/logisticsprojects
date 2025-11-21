@@ -190,8 +190,8 @@ export default function Sidebar() {
         <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      {/* Logo */}
-      <div className="relative z-10 p-4 border-b border-white/20 dark:border-gray-700/30">
+      {/* Logo - Hidden on mobile (shown in Topbar), visible on desktop when sidebar expanded */}
+      <div className="relative z-10 p-4 border-b border-white/20 dark:border-gray-700/30 hidden lg:block">
         <div className="flex items-center gap-3">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 rounded-2xl blur-lg opacity-60 group-hover:opacity-80 transition-all duration-300"></div>
@@ -199,6 +199,7 @@ export default function Sidebar() {
               <Snowflake className="w-6 h-6 text-white animate-pulse" />
             </div>
           </div>
+          {/* Logo text - only show on desktop when sidebar expanded */}
           {!sidebarCollapsed && (
             <div className="flex-1">
               <h1 className="text-base font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
@@ -281,7 +282,7 @@ export default function Sidebar() {
                       {/* Special Energy Subtitle */}
                       {isEnergyMenu && !isActive && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
-                          {item.to === '/energy' ? 'Green Energy' : 'Smart Control'}
+                          {item.to === '/energy' ? 'Năng lượng xanh' : 'Điều khiển thông minh'}
                         </div>
                       )}
                     </div>
@@ -327,8 +328,8 @@ export default function Sidebar() {
                 <Zap className="w-3 h-3 text-white" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] font-bold text-gray-800 dark:text-gray-200">System Status</div>
-                <div className="text-[9px] text-gray-600 dark:text-gray-400">All operational</div>
+                <div className="text-[10px] font-bold text-gray-800 dark:text-gray-200">Trạng thái hệ thống</div>
+                <div className="text-[9px] text-gray-600 dark:text-gray-400">Tất cả hoạt động bình thường</div>
               </div>
               <div className="flex gap-1">
                 <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>

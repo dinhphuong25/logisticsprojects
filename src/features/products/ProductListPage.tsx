@@ -212,12 +212,12 @@ export const ProductListPage = () => {
       
       {/* Enhanced Header with Gradient */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white flex items-center">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white flex items-center">
                 <div className="p-3 bg-white/20 rounded-xl mr-4 backdrop-blur-sm">
-                  <Package className="text-white" size={36} />
+                  <Package className="text-white" size={32} />
                 </div>
                 <div>
                   <div>Danh Sách Sản Phẩm ĐBSCL</div>
@@ -227,20 +227,20 @@ export const ProductListPage = () => {
                 </div>
               </h1>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <a 
                 href="/products/create"
-                className="flex items-center px-5 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl font-semibold"
+                className="flex items-center justify-center px-5 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl font-semibold"
               >
-                <Plus size={20} className="mr-2" />
+                <Plus size={18} className="mr-2" />
                 Thêm sản phẩm
               </a>
-              <button className="flex items-center px-5 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg hover:shadow-xl font-semibold">
-                <Upload size={20} className="mr-2" />
+              <button className="flex items-center justify-center px-5 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg hover:shadow-xl font-semibold">
+                <Upload size={18} className="mr-2" />
                 Import
               </button>
-              <button className="flex items-center px-5 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl font-semibold">
-                <Download size={20} className="mr-2" />
+              <button className="flex items-center justify-center px-5 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl font-semibold">
+                <Download size={18} className="mr-2" />
                 Export
               </button>
             </div>
@@ -248,9 +248,9 @@ export const ProductListPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Enhanced Statistics Cards with Gradients */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           {/* Total Products */}
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-3">
@@ -325,8 +325,8 @@ export const ProductListPage = () => {
         </div>
 
         {/* Enhanced Filters and Controls */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-8 border border-gray-100">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
               <Filter className="mr-2 text-blue-600" size={20} />
               Tìm kiếm & Lọc
@@ -423,14 +423,14 @@ export const ProductListPage = () => {
 
           {/* Bulk Actions */}
           {selectedProducts.length > 0 && (
-            <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 mt-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 mt-4">
               <div className="flex items-center">
                 <CheckCircle className="mr-2 text-blue-600" size={20} />
                 <span className="text-blue-800 font-semibold">
                   Đã chọn {selectedProducts.length} sản phẩm
                 </span>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-semibold">
                   <Edit size={16} className="inline mr-2" />
                   Cập nhật hàng loạt
